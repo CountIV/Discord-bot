@@ -35,7 +35,7 @@ async def on_ready():
                 global log
                 log = channel
 
-                message = "Bot ready."
+                message = "--- Bot ready. ---"
                 await channel.send(message)
 
 
@@ -45,12 +45,14 @@ async def on_message(message):
     if message.author == bot.user:
         return
     else:
-        if log_level[0]: await log.send('Message read: '+message.content)
+        if log_level[0]: 
+            auth = message.author
+            await log.send('Recieved from: ' + auth.name + '#' + auth.discriminator + '\nWith message: ' + message.content)
 
     # Identifies messages that start with the configured prefix
     for char in prefix:
         if message.content.startswith(char):
-            if log_level[0]: await message.channel.send('Command read: '+message.content)
+            if log_level[0]: await message.channel.send('Command read: ' + message.content[1:])
             # Message without the prefix
             cmd = message.content[1:]
             # Isolates the module call
