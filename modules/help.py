@@ -21,10 +21,10 @@ async def main(message):
     cmd_list = [i.replace("modules\\", "") for i in cmd_list]
 
     # Join the commands with a horizontal line separator
-    cmds = '\n\n———————→'.join(cmd_list)
+    cmds = '\n\n———→ '.join(cmd_list)
     embed = discord.Embed(
         title = f"Command List",
-        description = f"```———————→ {cmds}```",
+        description = f"```———→ {cmds}```",
         color = discord.Color.blue()
     )
 

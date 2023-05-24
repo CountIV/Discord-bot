@@ -1,6 +1,8 @@
 from random import choice
 import discord
 
+description = """Flips a coin."""
+
 async def main(message):
     # Random Choice
     flip = choice(["Heads", "Tails"])
