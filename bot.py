@@ -35,7 +35,7 @@ async def on_ready():
                 global log
                 log = channel
 
-                message = "--- Bot ready. ---"
+                message = "--- Bot ready ---"
                 await channel.send(message)
 
 
@@ -57,11 +57,10 @@ async def on_message(message):
             cmd = message.content[1:]
             # Isolates the module call
             call = cmd.split(" ")[0]
-            # Isolates the args
-            args = cmd.split(" ")[1:]
-            # Calls the function with the given args
-            eval(call+'('+", ".join(args)+')')
-    
+            # Call the function with the message as the arg
+            function = getattr(__import__('modules.' + call), call)
+            await function.main(message)
+
 
 
 token = open(".env/token", "r").read()
