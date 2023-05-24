@@ -15,7 +15,7 @@ bot = discord.Client(intents=intents)
 async def on_ready():
     print(f'Logged in as {bot.user}')
     print()
-    
+
     # Find the log channel from every server the bot is in
     for guild in bot.guilds:
         for channel in guild.text_channels:
@@ -24,8 +24,8 @@ async def on_ready():
                 global log
                 log = channel
 
-                message = "--- Bot ready ---"
-                await channel.send(message)
+                # message = "--- Bot ready ---"
+                # await channel.send(message)
 
 
 @bot.event
