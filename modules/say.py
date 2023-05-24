@@ -1,5 +1,3 @@
-import discord
-
 async def main(message):
-    await message.channel.send(message.content.split('!say ')[1])
+    await message.channel.send(message.content[1:].split('say ')[1])
     

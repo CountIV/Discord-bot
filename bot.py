@@ -1,16 +1,5 @@
 import discord
-import glob
-import importlib
 from utils.config import prefix, log_channel, log_level
-
-# Get a list of all modules within the folder
-modules = glob.glob("modules/*.py")
-
-# Imports all modules dynamically
-for m in modules:
-    module_name = m[:-3].replace('\\', '.')
-    module = importlib.import_module(module_name)
-    globals().update(vars(module))
 
 # Configure intents
 intents = discord.Intents.default()
@@ -58,8 +47,8 @@ async def on_message(message):
             # Isolates the module call
             call = cmd.split(" ")[0]
             # Call the function with the message as the arg
-            function = getattr(__import__('modules.' + call), call)
-            await function.main(message)
+            module = getattr(__import__('modules.' + call), call)
+            await module.main(message)
 
 
 
