@@ -1,6 +1,9 @@
 import discord
 from utils.config import prefix, log_channel, log_level
 
+description = """Main discord bot file"""
+
+
 # Configure intents
 intents = discord.Intents.default()
 intents.message_content = True
@@ -9,7 +12,6 @@ intents.members = True
 
 # Create bot object
 bot = discord.Client(intents=intents)
-
 
 @bot.event
 async def on_ready():
@@ -52,5 +54,6 @@ async def on_message(message):
 
 
 
-token = open(".env/token", "r").read()
-bot.run(token)
+if __name__ == "__main__":
+    token = open(".env/token", "r").read()
+    bot.run(token)

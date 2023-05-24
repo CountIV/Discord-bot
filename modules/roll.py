@@ -2,6 +2,9 @@ import re
 import discord
 from random import randint
 
+description = """Rolls polyhedral dice. This command accepts inputs of the form [number]d[number], where the first number is the amound of dice you want to roll and the second number is the amound of sides on the dice."""
+
+
 async def main(message):
     # Search for the roll input with regex
     roll = re.search("[0-9]+d[0-9]+", message.content)
