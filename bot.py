@@ -1,5 +1,5 @@
 import discord
-from utils.config import prefix, log_channel, log_level
+from utils.config import prefix, debug_channel, debug
 
 description = """Main discord bot file"""
 
@@ -13,21 +13,15 @@ intents.members = True
 # Create bot object
 bot = discord.Client(intents=intents)
 
+# Configure debug channel
+debug_channel = bot.get_channel(debug_channel)
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    print()
 
-    # Find the log channel from every server the bot is in
-    for guild in bot.guilds:
-        for channel in guild.text_channels:
-            # Sends a "Bot ready." message to the log channel
-            if channel.name == log_channel:
-                global log
-                log = channel
-
-                # message = "--- Bot ready ---"
-                # await channel.send(message)
+    if debug: 
+        await debug_channel.send("--- Bot Online ---")
 
 
 @bot.event
@@ -35,15 +29,10 @@ async def on_message(message):
     # Ignores messages sent by the bot
     if message.author == bot.user:
         return
-    else:
-        if log_level[0]: 
-            auth = message.author
-            await log.send('Recieved from: ' + auth.name + '#' + auth.discriminator + '\nWith message: ' + message.content)
 
     # Identifies messages that start with the configured prefix
     for char in prefix:
         if message.content.startswith(char):
-            if log_level[0]: await message.channel.send('Command read: ' + message.content[1:])
             # Message without the prefix
             cmd = message.content[1:]
             # Isolates the cog call

@@ -10,12 +10,7 @@ admin_role = config.get('Discord', 'admin_role')
 # APIs
 qr_code_generator = config.get('APIs', 'qr_code_generator')
 
-#Logging
-log_channel = config.get('Logging', 'log_channel')
-log_level = [
-    eval(config.get('Logging', 'log_debug')),       # debug
-    eval(config.get('Logging', 'log_info')),        # info
-    eval(config.get('Logging', 'log_warnings')),    # warnings
-    eval(config.get('Logging', 'log_errors'))       # errors
-]
+#Debugging
+debug_channel = config.get('Debug', 'log_channel').split(", ")
+debug = config.get('Debug', 'log_debug')
 
