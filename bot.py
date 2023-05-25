@@ -1,5 +1,8 @@
 import discord
-from utils.config import prefix, debug_channel, debug
+import os
+from discord.ext import commands
+from utils.config import prefix
+
 
 description = """Main discord bot file"""
 
@@ -10,38 +13,22 @@ intents.message_content = True
 intents.presences = True
 intents.members = True
 
-# Create bot object
-bot = discord.Client(intents=intents)
 
-# Configure debug channel
-debug_channel = bot.get_channel(debug_channel)
+# Create bot object
+bot = commands.Bot(command_prefix=prefix, intents=intents)
+
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-
-    if debug: 
-        await debug_channel.send("--- Bot Online ---")
-
-
-@bot.event
-async def on_message(message):
-    # Ignores messages sent by the bot
-    if message.author == bot.user:
-        return
-
-    # Identifies messages that start with the configured prefix
-    for char in prefix:
-        if message.content.startswith(char):
-            # Message without the prefix
-            cmd = message.content[1:]
-            # Isolates the cog call
-            call = cmd.split(" ")[0]
-            # Import the cog dynamically
-            cog = getattr(__import__('cogs.' + call), call)
-            # Call the main function of the cog with the message as the argument
-            await cog.main(message)
-
+    
+    # List of cog files within the cogs folder
+    cog_files = [f for f in os.listdir('cogs') if f.endswith('.py')]
+    
+    # Load cogs
+    for cog in cog_files:
+        extension = f"cogs.{cog[:-3]}"
+        await bot.load_extension(extension)
 
 
 if __name__ == "__main__":

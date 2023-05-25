@@ -11,6 +11,6 @@ admin_role = config.get('Discord', 'admin_role')
 qr_code_generator = config.get('APIs', 'qr_code_generator')
 
 #Debugging
-debug_channel = config.get('Debug', 'log_channel').split(", ")
+debug_channel = config.get('Debug', 'debug_channel').split(", ")
 debug = config.get('Debug', 'log_debug')
 
