@@ -34,14 +34,18 @@ async def main(message):
     # Isolate the roll input
     roll = roll.group()
 
-    # Convert to int
+    # Split the roll input
     dice_count, dice_size = roll.split("d")
+
+    # Convert to int values
     dice_count = int(dice_count)
     dice_size = int(dice_size)
 
+    # Determine roll values
     rolls = [randint(1, dice_size) for _ in range(dice_count)]
     total = sum(rolls)
 
+    # Convert to string and join with an empty space for readability
     _rolls = [str(i) for i in rolls]
     _rolls = " ".join(_rolls)
     embed = discord.Embed(

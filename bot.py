@@ -48,8 +48,9 @@ async def on_message(message):
             cmd = message.content[1:]
             # Isolates the module call
             call = cmd.split(" ")[0]
-            # Call the function with the message as the arg
+            # Import the module dynamically
             module = getattr(__import__('modules.' + call), call)
+            # Call the main function of the module with the message as the argument
             await module.main(message)
 
 

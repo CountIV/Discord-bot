@@ -20,7 +20,7 @@ async def main(message):
     # Remove the 'modules\' prefix from the commands
     cmd_list = [i.replace("modules\\", "") for i in cmd_list]
 
-    # Join the commands with a horizontal line separator
+    # Join the commands with a horizontal line separator for readability
     cmds = '\n\n———→ '.join(cmd_list)
     embed = discord.Embed(
         title = f"Command List",
