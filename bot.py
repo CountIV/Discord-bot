@@ -21,7 +21,7 @@ bot = commands.Bot(command_prefix=prefix, intents=intents)
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    
+
     # List of cog files within the cogs folder
     cog_files = [f for f in os.listdir('cogs') if f.endswith('.py')]
     
