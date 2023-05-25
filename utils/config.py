@@ -9,6 +9,7 @@ admin_role = config.get('Discord', 'admin_role')
 
 # APIs
 qr_code_generator = config.get('APIs', 'qr_code_generator')
+wikipedia_api = config.get('APIs', 'wikipedia_api')
 
 #Debugging
 debug_channel = config.get('Debug', 'debug_channel').split(", ")
