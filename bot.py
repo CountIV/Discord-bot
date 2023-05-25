@@ -4,15 +4,8 @@ from discord.ext import commands
 from utils.config import prefix
 
 
-# Configure intents
-intents = discord.Intents.default()
-intents.message_content = True
-intents.presences = True
-intents.members = True
-
-
 # Create bot object
-bot = commands.Bot(command_prefix=prefix, intents=intents)
+bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 
 
 @bot.event
