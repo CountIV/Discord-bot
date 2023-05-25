@@ -46,12 +46,12 @@ async def on_message(message):
             if log_level[0]: await message.channel.send('Command read: ' + message.content[1:])
             # Message without the prefix
             cmd = message.content[1:]
-            # Isolates the module call
+            # Isolates the cog call
             call = cmd.split(" ")[0]
-            # Import the module dynamically
-            module = getattr(__import__('modules.' + call), call)
-            # Call the main function of the module with the message as the argument
-            await module.main(message)
+            # Import the cog dynamically
+            cog = getattr(__import__('cogs.' + call), call)
+            # Call the main function of the cog with the message as the argument
+            await cog.main(message)
 
 
 
