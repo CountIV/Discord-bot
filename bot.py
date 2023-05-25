@@ -4,9 +4,6 @@ from discord.ext import commands
 from utils.config import prefix
 
 
-description = """Main discord bot file"""
-
-
 # Configure intents
 intents = discord.Intents.default()
 intents.message_content = True
