@@ -51,6 +51,6 @@ class PolyhedralDice(commands.Cog):
 
 
 async def setup(bot):
-    # Add the Repeat cog to the bot when called from bot.py
+    # Add the PolyhedralDice cog to the bot when called from bot.py
     await bot.add_cog(PolyhedralDice(bot))
     
