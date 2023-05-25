@@ -5,9 +5,8 @@ from discord.ext import commands
 class flip(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.description = description = """Flips a coin"""
 
-    @commands.command()
+    @commands.command(help='- Flips a coin')
     async def flip(self, ctx):
         # Random Choice
         flip = choice(["Heads", "Tails"])
