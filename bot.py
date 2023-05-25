@@ -28,7 +28,10 @@ async def on_ready():
     # Load cogs
     for cog in cog_files:
         extension = f"cogs.{cog[:-3]}"
-        await bot.load_extension(extension)
+        try:
+            await bot.load_extension(extension)
+        except:
+            pass
 
 
 if __name__ == "__main__":
