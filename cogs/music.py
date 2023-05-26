@@ -1,63 +1,90 @@
 import discord
-import yt_dlp
+from discord.utils import get
+from yt_dlp import YoutubeDL
 from discord.ext import commands
 
 
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.queue = []
+
 
     @commands.command()
     async def join(self, ctx):
-        """Joins a voice channel"""
-
-        if ctx.author.voice and ctx.author.voice.channel is None:
-            await ctx.send("You need to be in a voice channel to use this command.")
-            return
-
-        # Retrieves the voice channel of the author
+        """- Join the voice channel of the author"""
+        
         channel = ctx.author.voice.channel
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
-        # Move to the author's channel
-        if ctx.voice_client is not None:
-            await ctx.voice_client.move_to(channel)
+        if voice_client and voice_client.is_connected():
+            await voice_client.move_to(channel)
         else:
-            await channel.connect()
-    
+            voice_client = await channel.connect()
+
+
     @commands.command()
     async def leave(self, ctx):
-        """Leaves the voice channel"""
-        if ctx.voice_client is not None:
-            await ctx.voice_client.disconnect()
-    
+        """- Disconnect from the voice channel"""
+
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+
+        if voice_client and voice_client.is_connected():
+            await voice_client.disconnect()
+
+
     @commands.command()
     async def play(self, ctx, url):
-        """Plays a song from YouTube"""
+        """- Play a song from YouTube"""
 
-        # If not yet in a voice channel, join the author's
-        if ctx.voice_client is None:
-            await self.join(ctx)
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
-        # Sets the format and postprocessing for the audio
+        # Connect to the author's channel
+        if not voice_client or not voice_client.is_connected():
+            await ctx.invoke(self.join)
+
         parameters = {
-            'format': 'bestaudio/best',
+            'format':               'bestaudio/best',
             'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
+                'key':              'FFmpegExtractAudio',
+                'preferredcodec':   'mp3',
                 'preferredquality': '192',
             }],
         }
 
-
-        with yt_dlp.YoutubeDL(parameters) as youtube:
-            # Extract information about the video specified by the user provided url
+        with YoutubeDL(parameters) as youtube:
             info = youtube.extract_info(url, download=False)
-            # Extracts the URL of the first available format for the video
-            video_url = info['formats'][0]['url']
-            # Stops the currently playing audio in the voice client
-            ctx.voice_client.stop()
-            # Plays the audio from the provided video_url
-            ctx.voice_client.play(discord.FFmpegPCMAudio(video_url))
+            song = info['formats'][0]['url']
+
+        # Add the song to the queue and play it
+        self.queue.append(song)
+
+        if not voice_client.is_playing():
+            await self.play_song(ctx)
+
+
+    @commands.command()
+    async def clear(self, ctx):
+        """- Stop playing the current song and clears the queue"""
+
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+
+        if voice_client and voice_client.is_playing():
+            voice_client.stop()
+        
+        self.queue.clear()
+
+
+    async def play_song(self, ctx):
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+
+        if not self.queue:
+            embed = discord.Embed(description="The queue is empty.")
+            await ctx.send(embed=embed)
+            return
+
+        current_song = self.queue.pop(0)
+        voice_client.play(discord.FFmpegPCMAudio(current_song), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
 
 
 async def setup(bot):
