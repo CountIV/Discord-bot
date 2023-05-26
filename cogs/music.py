@@ -37,11 +37,9 @@ class Music(commands.Cog):
     async def play(self, ctx, url):
         """- Play a song from YouTube"""
 
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
-
         # Connect to the author's channel
-        if not voice_client or not voice_client.is_connected():
-            await ctx.invoke(self.join)
+        await ctx.invoke(self.join)
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
         parameters = {
             'format':               'bestaudio/best',
@@ -60,6 +58,8 @@ class Music(commands.Cog):
         self.queue.append(song)
 
         if not voice_client.is_playing():
+            embed = discord.Embed(description=f"Playing music for {ctx.author}")
+            await ctx.send(embed=embed)
             await self.play_song(ctx)
 
 
@@ -71,7 +71,7 @@ class Music(commands.Cog):
 
         if voice_client and voice_client.is_playing():
             voice_client.stop()
-        
+
         self.queue.clear()
 
 
@@ -79,7 +79,7 @@ class Music(commands.Cog):
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
         if not self.queue:
-            embed = discord.Embed(description="The queue is empty.")
+            embed = discord.Embed(description="The queue is now empty")
             await ctx.send(embed=embed)
             return
 
