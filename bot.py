@@ -24,6 +24,13 @@ async def on_ready():
             pass
 
 
+@bot.event
+async def on_member_join(member):
+    # Gives warm welcome to new members
+    channel = member.guild.system_channel
+    await channel.send(f"{member.mention} blasts into the server!")
+
+
 if __name__ == "__main__":
     token = open(".env/token", "r").read()
     bot.run(token)
