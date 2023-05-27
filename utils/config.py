@@ -1,17 +1,26 @@
 import configparser
 
-config = configparser.ConfigParser()
-config.read('config/config.ini')
+c = configparser.ConfigParser()
+c.read('config/config.ini')
+
 
 # Discord
-prefix = config.get('Discord', 'prefix').split(", ")
-admin_role = config.get('Discord', 'admin_role')
+prefix = c.get('Discord', 'prefix').split(", ")
+admin_role = c.get('Discord', 'admin_role')
+
 
 # APIs
-qr_code_generator = config.get('APIs', 'qr_code_generator')
-wikipedia_api = config.get('APIs', 'wikipedia_api')
+qr_code_generator = c.get('APIs', 'qr_code_generator')
+wikipedia_api = c.get('APIs', 'wikipedia_api')
+
+
+# Aliases
+music_join  = c.get('Aliases', 'music_join').split(", ")
+music_leave = c.get('Aliases', 'music_leave').split(", ")
+music_play  = c.get('Aliases', 'music_play').split(", ")
+music_clear = c.get('Aliases', 'music_clear').split(", ")
 
 #Debugging
-debug_channel = config.get('Debug', 'debug_channel').split(", ")
-debug = config.get('Debug', 'log_debug')
+debug_channel = c.get('Debug', 'debug_channel').split(", ")
+debug = c.get('Debug', 'log_debug')
 

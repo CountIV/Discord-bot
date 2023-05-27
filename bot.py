@@ -20,8 +20,8 @@ async def on_ready():
         extension = f"cogs.{cog[:-3]}"
         try:
             await bot.load_extension(extension)
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
 
 @bot.event

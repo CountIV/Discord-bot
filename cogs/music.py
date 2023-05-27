@@ -1,7 +1,9 @@
 import discord
-from discord.utils import get
 from yt_dlp import YoutubeDL
+from discord.utils import get
+import utils.config as config
 from discord.ext import commands
+
 
 
 class Music(commands.Cog):
@@ -10,7 +12,7 @@ class Music(commands.Cog):
         self.queue = []
 
 
-    @commands.command()
+    @commands.command(aliases=config.music_join)
     async def join(self, ctx):
         """- Join the voice channel of the author"""
         
@@ -23,7 +25,7 @@ class Music(commands.Cog):
             voice_client = await channel.connect()
 
 
-    @commands.command()
+    @commands.command(aliases=config.music_leave)
     async def leave(self, ctx):
         """- Disconnect from the voice channel"""
 
@@ -33,7 +35,7 @@ class Music(commands.Cog):
             await voice_client.disconnect()
 
 
-    @commands.command()
+    @commands.command(aliases=config.music_play)
     async def play(self, ctx, url):
         """- Play a song from YouTube"""
 
@@ -41,6 +43,7 @@ class Music(commands.Cog):
         await ctx.invoke(self.join)
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
+        # parameters for YoutubeDL
         parameters = {
             'format':               'bestaudio/best',
             'postprocessors': [{
@@ -58,12 +61,12 @@ class Music(commands.Cog):
         self.queue.append(song)
 
         if not voice_client.is_playing():
-            embed = discord.Embed(description=f"Playing music for {ctx.author}")
+            embed = discord.Embed(description=f"Playing music for **{ctx.author}**")
             await ctx.send(embed=embed)
             await self.play_song(ctx)
 
 
-    @commands.command()
+    @commands.command(aliases=config.music_clear)
     async def clear(self, ctx):
         """- Stop playing the current song and clears the queue"""
 
@@ -78,11 +81,13 @@ class Music(commands.Cog):
     async def play_song(self, ctx):
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
+        # if the queue is empty
         if not self.queue:
             embed = discord.Embed(description="The queue is now empty")
             await ctx.send(embed=embed)
             return
 
+        # pop the next song and play it after the current one is finished
         current_song = self.queue.pop(0)
         voice_client.play(discord.FFmpegPCMAudio(current_song), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
 
