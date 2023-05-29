@@ -20,8 +20,7 @@ class Roll(commands.Cog):
         if pattern == None:
             embed = discord.Embed(
             title = "Invalid input",
-            description = f"This command accepts inputs of the form [number]d[number], \nwhere the first number is the amound of dice you want to roll and the second number is the amound of sides on the dice.",
-            color = 16711680
+            description = f"This command accepts inputs of the form [number]d[number], \nwhere the first number is the amound of dice you want to roll and the second number is the amound of sides on the dice."
             )
             embed.set_footer(text="E.g. 2d6 to roll two six-sided dice")
             await ctx.send(embed=embed)
