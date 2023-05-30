@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from yt_dlp import YoutubeDL
 from discord.utils import get
@@ -10,6 +11,7 @@ class Music(commands.Cog):
         self.bot = bot
         self.queue = []
         self.current = None
+        self.disconnect_timers = {}
 
 
     @commands.command(aliases=config.music_join)
@@ -30,6 +32,7 @@ class Music(commands.Cog):
             voice_client = await channel.connect()
 
 
+
     @commands.command(aliases=config.music_leave)
     async def leave(self, ctx):
         """- Disconnect from the voice channel"""
@@ -40,6 +43,89 @@ class Music(commands.Cog):
         # Disconnect from the voice channel it is in
         if voice_client and voice_client.is_connected():
             await voice_client.disconnect()
+
+
+
+    @commands.command(aliases=config.music_clear)
+    async def clear(self, ctx):
+        """- Stop playing the current song and clears the queue"""
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+
+        # If the voice client is connected and playing, stop the playback
+        if voice_client and voice_client.is_playing():
+            voice_client.stop()
+
+        # Clear the queue and set the current song to None
+        self.queue.clear()
+        self.current = None
+
+
+
+    @commands.command(aliases=config.music_skip)
+    async def skip(self, ctx):
+        """- Skips the current song and plays the next"""
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+        
+        # Stop the current client
+        voice_client.stop()
+
+        # If the queue is not empty, call the play_song() function
+        if len(self.queue):
+            await self.play_song(ctx, skip=True)
+
+
+
+    @commands.command(aliases=config.music_queue)
+    async def queue(self, ctx):
+        """- Shows the current queue"""
+
+        # If the queue is empty, send an embed message indicating that
+        if len(self.queue) == 0:
+            embed = discord.Embed(description="The queue is empty")
+            if self.current is not None:
+                embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
+            await ctx.send(embed=embed)
+            return
+
+        # Format the song information for display
+        items = ""
+        for i, song in enumerate(self.queue):
+            title = song['title']
+            duration = song['duration']
+            minutes, seconds = divmod(duration, 60)
+            items += f"`{i+1}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
+
+        # Create an embed message with the queue information
+        embed = discord.Embed(
+            title=f"Queue [{len(self.queue)}]",
+            description=f"{items}"
+        )
+
+        # Set a footer for any currently playing song if one exists
+        if self.current is not None:
+            embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
+
+        await ctx.send(embed=embed)
+    
+
+
+    @commands.command(aliases=config.music_remove)
+    async def remove(self, ctx, index=1):
+        """- Remove a song from a given index, assuming the first if not specified"""
+        index = int(index)
+        try:
+            # if the given index is 0, remove the currently playing song
+            if index == 0:
+                await self.skip(ctx)
+                return
+            # Remove song at given index
+            removed = self.queue.pop(index-1)
+            embed = discord.Embed(description=f"Removed {removed['title']} from queue")
+            await ctx.send(embed=embed)
+        except IndexError:
+            embed = discord.Embed(description=f"Given index `{index}` not in queue")
+            await ctx.send(embed=embed)
+
 
 
     @commands.command(aliases=config.music_play)
@@ -106,71 +192,6 @@ class Music(commands.Cog):
             await self.play_song(ctx)
 
 
-    @commands.command(aliases=config.music_clear)
-    async def clear(self, ctx):
-        """- Stop playing the current song and clears the queue"""
-
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
-
-        if voice_client and voice_client.is_playing():
-            voice_client.stop()
-
-        self.queue.clear()
-        self.current = None
-
-
-    @commands.command(aliases=config.music_skip)
-    async def skip(self, ctx):
-        """- Skips the current song and plays the next"""
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
-        
-        # Stop the current client
-        voice_client.stop()
-
-        # If the queue is not empty, call the play_song() function
-        if len(self.queue):
-            await self.play_song(ctx, skip=True)
-
-
-    @commands.command(aliases=config.music_queue)
-    async def queue(self, ctx):
-        """- Shows the current queue"""
-
-        # If the queue is empty, send an embed message indicating that
-        if len(self.queue) == 0:
-            embed = discord.Embed(description="The queue is empty")
-            if self.current is not None:
-                embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
-            await ctx.send(embed=embed)
-            return
-
-        items = ""
-        for i, song in enumerate(self.queue):
-            # Format the song information for display
-            title = song['title']
-            duration = song['duration']
-            minutes, seconds = divmod(duration, 60)
-            items += f"`{i+1}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
-
-        # Create an embed message with the queue information
-        embed = discord.Embed(
-            title=f"Queue [{len(self.queue)}]",
-            description=f"{items}"
-        )
-        if self.current is not None:
-            embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
-
-        await ctx.send(embed=embed)
-    
-
-    @commands.command(alias=config.music_remove)
-    async def remove(self, ctx, index=1):
-        """- Remove a song from a given index, assume the first if not specified"""
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
-        removed = self.queue.pop(index)
-        embed = discord.Embed(description=f"Removed {removed['title']} from queue")
-        await ctx.send(embed=embed)
-
 
     async def play_song(self, ctx, skip=False):
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
@@ -180,6 +201,7 @@ class Music(commands.Cog):
             embed = discord.Embed(description="The queue is now empty")
             await ctx.send(embed=embed)
             return
+        
 
         # Options to reconnect rather than terminate song if disconnected by corrupt packets
         ffmpeg_options = {
@@ -211,6 +233,37 @@ class Music(commands.Cog):
         except UnboundLocalError:
             # print("skip was invoked")
             pass
+
+
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        """- Sets a timer that disconnects the bot if there are no other users in the voice channel"""
+        # get the voice channel from the before or after object
+        voice_channel = before.channel or after.channel
+        if voice_channel:
+            # get the number of connected users in the voice channel
+            connected_users = len(voice_channel.members) - 1
+            # if there are no connected users, initiate the disconnect timer
+            if connected_users == 0:
+                # cancel the timer if one is already running
+                if voice_channel.guild.id in self.disconnect_timers:
+                    self.disconnect_timers[voice_channel.guild.id].cancel()
+                # set the timer for 4 seconds
+                self.disconnect_timers[voice_channel.guild.id] = self.bot.loop.call_later(4, self.disconnect_from_empty_channel, voice_channel)
+
+
+
+    def disconnect_from_empty_channel(self, voice_channel):
+        voice_client = discord.utils.get(self.bot.voice_clients, guild=voice_channel.guild)
+        guild_id = voice_channel.guild.id
+        # cancel the active timer
+        if guild_id in self.disconnect_timers:
+            self.disconnect_timers.pop(guild_id).cancel()
+
+        # disconnect the bot
+        if voice_client and voice_client.is_connected() and len(voice_channel.members) == 1:
+            self.bot.loop.create_task(voice_client.disconnect())
 
 
 async def setup(bot):
