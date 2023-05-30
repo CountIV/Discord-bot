@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-class ping(commands.Cog):
+class Ping(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -16,4 +16,4 @@ class ping(commands.Cog):
         await ctx.send(user.mention)
 
 async def setup(bot):
-    await bot.add_cog(ping(bot))
+    await bot.add_cog(Ping(bot))

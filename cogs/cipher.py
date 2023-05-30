@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-class cipher(commands.Cog):
+class Cipher(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -24,4 +24,4 @@ class cipher(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(cipher(bot))
+    await bot.add_cog(Cipher(bot))
