@@ -1,7 +1,6 @@
 import discord
 import requests
 from discord.ext import commands
-from utils.config import wikipedia_api
 
 
 class Wikipedia(commands.Cog):
@@ -11,8 +10,16 @@ class Wikipedia(commands.Cog):
     @commands.command()
     async def wiki(self, ctx, *, search_query):
         """- Searches wikipedia for the given search_query"""
-        api = wikipedia_api
+        api = "https://en.wikipedia.org/w/api.php"
 
+        exceptions = ['a', 'an', 'the', 
+                      'and', 'but', 'or', 'nor', 'for', 'so', 'yet', 
+                      'at', 'by', 'for', 'from', 'in', 'into', 'of', 'off', 'on', 'onto', 'out', 'over', 'to', 'up', 'with'
+                      ]
+        search_query = search_query.split(" ")
+        search_query = [s.capitalize() if s not in exceptions else s for s in search_query]
+        search_query[0] = search_query[0].capitalize()
+        search_query = " ".join(search_query)
         params = {
             "action": "query",
             "format": "json",

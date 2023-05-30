@@ -1,7 +1,6 @@
 import discord
 import requests
 from discord.ext import commands
-from utils.config import qr_code_generator
 
 
 class QR(commands.Cog):
@@ -13,7 +12,7 @@ class QR(commands.Cog):
     async def qr(self, ctx, link):
         """- Converts a given link to a QR code."""
         # Set API endpoint and parameters
-        api = qr_code_generator
+        api = "https://api.qrserver.com/v1/create-qr-code/"
         parameters = {"data":link, "size":"300x300"}
 
         # Send a GET request to the generator API

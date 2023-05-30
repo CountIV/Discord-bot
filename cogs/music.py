@@ -9,6 +9,7 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.queue = []
+        self.current = None
 
 
     @commands.command(aliases=config.music_join)
@@ -84,8 +85,8 @@ class Music(commands.Cog):
         except IndexError:
                 # If no videos found, send an error message and return
                 embed = discord.Embed(description=f"No videos found with `{query}`")
-                await waiting_message.delete()
                 await ctx.send(embed=embed)
+                await waiting_message.delete()
                 return
 
         # Get song duration and format it to mm:ss
@@ -115,7 +116,8 @@ class Music(commands.Cog):
             voice_client.stop()
 
         self.queue.clear()
-    
+        self.current = None
+
 
     @commands.command(aliases=config.music_skip)
     async def skip(self, ctx):
@@ -127,8 +129,8 @@ class Music(commands.Cog):
 
         # If the queue is not empty, call the play_song() function
         if len(self.queue):
-            await self.play_song(ctx)
-    
+            await self.play_song(ctx, skip=True)
+
 
     @commands.command(aliases=config.music_queue)
     async def queue(self, ctx):
@@ -137,6 +139,8 @@ class Music(commands.Cog):
         # If the queue is empty, send an embed message indicating that
         if len(self.queue) == 0:
             embed = discord.Embed(description="The queue is empty")
+            if self.current is not None:
+                embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
             await ctx.send(embed=embed)
             return
 
@@ -147,19 +151,28 @@ class Music(commands.Cog):
             duration = song['duration']
             minutes, seconds = divmod(duration, 60)
             items += f"`{i+1}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
-        
+
         # Create an embed message with the queue information
         embed = discord.Embed(
             title=f"Queue [{len(self.queue)}]",
             description=f"{items}"
         )
-        
+        if self.current is not None:
+            embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
+
+        await ctx.send(embed=embed)
+    
+
+    @commands.command(alias=config.music_remove)
+    async def remove(self, ctx, index=1):
+        """- Remove a song from a given index, assume the first if not specified"""
+        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+        removed = self.queue.pop(index)
+        embed = discord.Embed(description=f"Removed {removed['title']} from queue")
         await ctx.send(embed=embed)
 
 
-
-
-    async def play_song(self, ctx):
+    async def play_song(self, ctx, skip=False):
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
         # If the queue is empty, send the relevant response
@@ -175,23 +188,29 @@ class Music(commands.Cog):
         }
 
         # Retrieve the information of the current song from the queue
-        current_song = self.queue.pop(0)
-        url       = current_song['url']
-        title     = current_song['title']
-        uploader  = current_song['uploader']
-        requester = current_song['requester']
+        if not skip:
+            current_song = self.queue.pop(0)
+            self.current = current_song
+            url       = current_song['url']
+            title     = current_song['title']
+            uploader  = current_song['uploader']
+            requester = current_song['requester']
 
-        # Create an embed message to display the current song being played
-        embed = discord.Embed(
-            title=f"Now playing: **{title}**",
-            description=f"**{uploader}**",
-            color = 16711680
-        )
-        embed.set_footer(text=f"Requested by {requester}")
-        await ctx.send(embed=embed)
+            # Create an embed message to display the current song being played
+            embed = discord.Embed(
+                title=f"Now playing: **{title}**",
+                description=f"**{uploader}**",
+                color = 16711680
+            )
+            embed.set_footer(text=f"Requested by {requester}")
+            await ctx.send(embed=embed)
 
-        # Start playing the song using FFmpeg and set the after callback to call this function and play the next song
-        voice_client.play(discord.FFmpegPCMAudio(url, **ffmpeg_options), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
+        try:
+            # Start playing the song using FFmpeg and set the after callback to call this function and play the next song
+            voice_client.play(discord.FFmpegPCMAudio(url, **ffmpeg_options), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
+        except UnboundLocalError:
+            # print("skip was invoked")
+            pass
 
 
 async def setup(bot):
