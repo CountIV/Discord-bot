@@ -2,7 +2,7 @@ from random import choice
 import discord
 from discord.ext import commands
 
-class flip(commands.Cog):
+class Flip(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -23,4 +23,4 @@ class flip(commands.Cog):
         await ctx.send(embed=embed)
 
 async def setup(bot):
-    await bot.add_cog(flip(bot))
+    await bot.add_cog(Flip(bot))
