@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from yt_dlp import YoutubeDL
 from discord.utils import get
 import utils.config as config
@@ -137,8 +138,17 @@ class Music(commands.Cog):
         """- Play a song from YouTube"""
 
         # Do nothing if query is empty
-        if query == None:
+        if query == None or query == "":
             return
+        
+        # If song entries are separated by a comma, search and play for all
+        if "," in query:
+            queries = query.split(",")
+            for i in queries:
+                await self.play(ctx, query=i)
+                print(i)
+            return
+
 
         # Connect to the author's channel
         await ctx.invoke(self.join)
