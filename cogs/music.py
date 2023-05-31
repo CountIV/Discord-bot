@@ -1,5 +1,4 @@
 import discord
-import asyncio
 from yt_dlp import YoutubeDL
 from discord.utils import get
 import utils.config as config
@@ -50,7 +49,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['clear'])
     async def clear(self, ctx):
-        """- Stop playing the current song and clears the queue"""
+        """- Stops playing the current song and clears the queue"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
         # If the voice client is connected and playing, stop the playback
@@ -65,7 +64,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['skip'])
     async def skip(self, ctx):
-        """- Skips the current song and plays the next"""
+        """- Skips the current song and plays the next in queue"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
         
         if self.current is not None:
@@ -86,7 +85,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['queue'])
     async def queue(self, ctx):
-        """- Shows the current queue"""
+        """- Shows the currently playing song and queue"""
 
         # If the queue is empty, send an embed message indicating that
         if len(self.queue) == 0:
@@ -120,8 +119,8 @@ class Music(commands.Cog):
 
 
     @commands.command(aliases=config.music['remove'])
-    async def remove(self, ctx, index=1):
-        """- Remove a song from a given index, assuming the first if not specified"""
+    async def remove(self, ctx, index=-1):
+        """- Remove a song from a given index, assuming the last added if not specified"""
         index = int(index)
         try:
             # if the given index is 0, remove the currently playing song
@@ -129,7 +128,10 @@ class Music(commands.Cog):
                 await self.skip(ctx)
                 return
             # Remove song at given index
-            removed = self.queue.pop(index-1)
+            if index > 0:
+                removed = self.queue.pop(index-1)
+            else:
+                removed = self.queue.pop(index)
             embed = discord.Embed(description=f"Removed {removed['title']} from queue")
             await ctx.send(embed=embed)
         except IndexError:
@@ -223,23 +225,24 @@ class Music(commands.Cog):
     async def play_song(self, ctx, skip=False):
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
-        # If the queue is empty, send the relevant response
-        if not self.queue:
-            embed = discord.Embed(description="The queue is now empty")
-            await ctx.send(embed=embed)
-            return
-
         # Options to reconnect rather than terminate song if disconnected by corrupt packets
         ffmpeg_options = {
         'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
         'options': '-vn',
         }
         
+        # Delete the previous message containing the currently playing song if it exists
         if self.now_playing is not None:
             try:
                 await self.now_playing.delete()
             except:
                 pass
+        
+        # If the queue is empty, send the relevant response
+        if not self.queue:
+            embed = discord.Embed(description="The queue is now empty")
+            await ctx.send(embed=embed)
+            return
 
         if not skip:
             # Retrieve the information of the current song from the queue

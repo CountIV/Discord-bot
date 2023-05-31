@@ -11,7 +11,7 @@ class Roll(commands.Cog):
 
     @commands.command()
     async def roll(self, ctx, roll="1d6"):
-        """- Rolls dice of the form [number]d[number]"""
+        """- Rolls dice of the form [dice count]d[dice size] E.g. \"2d6\" to roll two six-sided dice"""
 
         # Search for the roll input with regex
         pattern = re.search("[0-9]+d[0-9]+", roll)
