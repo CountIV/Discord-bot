@@ -10,13 +10,16 @@ admin_role = c.get('Discord', 'admin_role')
 
 
 # Aliases
-music_join   = c.get('Aliases', 'music_join').split(", ")
-music_leave  = c.get('Aliases', 'music_leave').split(", ")
-music_play   = c.get('Aliases', 'music_play').split(", ")
-music_clear  = c.get('Aliases', 'music_clear').split(", ")
-music_skip   = c.get('Aliases', 'music_skip').split(", ")
-music_queue  = c.get('Aliases', 'music_queue').split(", ")
-music_remove = c.get('Aliases', 'music_remove').split(", ")
+music = {
+    'join':     c.get('Aliases', 'music_join').split(", "),
+    'leave':    c.get('Aliases', 'music_leave').split(", "),
+    'play':     c.get('Aliases', 'music_play').split(", "),
+    'clear':    c.get('Aliases', 'music_clear').split(", "),
+    'skip':     c.get('Aliases', 'music_skip').split(", "),
+    'queue':    c.get('Aliases', 'music_queue').split(", "),
+    'remove':   c.get('Aliases', 'music_remove').split(", "),
+}
+
 
 #Debugging
 debug_channel = c.get('Debug', 'debug_channel').split(", ")

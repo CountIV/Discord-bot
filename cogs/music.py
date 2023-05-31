@@ -13,7 +13,7 @@ class Music(commands.Cog):
         self.disconnect_timers = {}
 
 
-    @commands.command(aliases=config.music_join)
+    @commands.command(aliases=config.music['join'])
     async def join(self, ctx):
         """- Join the voice channel of the author"""
         
@@ -32,7 +32,7 @@ class Music(commands.Cog):
 
 
 
-    @commands.command(aliases=config.music_leave)
+    @commands.command(aliases=config.music['leave'])
     async def leave(self, ctx):
         """- Disconnect from the voice channel"""
 
@@ -45,7 +45,7 @@ class Music(commands.Cog):
 
 
 
-    @commands.command(aliases=config.music_clear)
+    @commands.command(aliases=config.music['clear'])
     async def clear(self, ctx):
         """- Stop playing the current song and clears the queue"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
@@ -60,7 +60,7 @@ class Music(commands.Cog):
 
 
 
-    @commands.command(aliases=config.music_skip)
+    @commands.command(aliases=config.music['skip'])
     async def skip(self, ctx):
         """- Skips the current song and plays the next"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
@@ -77,7 +77,7 @@ class Music(commands.Cog):
 
 
 
-    @commands.command(aliases=config.music_queue)
+    @commands.command(aliases=config.music['queue'])
     async def queue(self, ctx):
         """- Shows the current queue"""
 
@@ -112,7 +112,7 @@ class Music(commands.Cog):
 
 
 
-    @commands.command(aliases=config.music_remove)
+    @commands.command(aliases=config.music['remove'])
     async def remove(self, ctx, index=1):
         """- Remove a song from a given index, assuming the first if not specified"""
         index = int(index)
@@ -132,7 +132,7 @@ class Music(commands.Cog):
 
 
 
-    @commands.command(aliases=config.music_play)
+    @commands.command(aliases=config.music['play'])
     async def play(self, ctx, *, query=None):
         """- Play a song from YouTube"""
 
@@ -276,6 +276,7 @@ class Music(commands.Cog):
         # disconnect the bot
         if voice_client and voice_client.is_connected() and len(voice_channel.members) == 1:
             self.bot.loop.create_task(voice_client.disconnect())
+
 
 
 async def setup(bot):
