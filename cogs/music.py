@@ -1,4 +1,3 @@
-import asyncio
 import discord
 from yt_dlp import YoutubeDL
 from discord.utils import get
@@ -67,11 +66,14 @@ class Music(commands.Cog):
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
         
         # Stop the current client
-        voice_client.stop()
+        if voice_client is not None:
+            voice_client.stop()
 
         # If the queue is not empty, call the play_song() function
         if len(self.queue):
             await self.play_song(ctx, skip=True)
+        else:
+            self.current = None
 
 
 
@@ -82,6 +84,7 @@ class Music(commands.Cog):
         # If the queue is empty, send an embed message indicating that
         if len(self.queue) == 0:
             embed = discord.Embed(description="The queue is empty")
+            # If the queue is empty but there is a song playing then display that
             if self.current is not None:
                 embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
             await ctx.send(embed=embed)
@@ -106,7 +109,7 @@ class Music(commands.Cog):
             embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
 
         await ctx.send(embed=embed)
-    
+
 
 
     @commands.command(aliases=config.music_remove)
@@ -123,18 +126,27 @@ class Music(commands.Cog):
             embed = discord.Embed(description=f"Removed {removed['title']} from queue")
             await ctx.send(embed=embed)
         except IndexError:
-            embed = discord.Embed(description=f"Given index `{index}` not in queue")
-            await ctx.send(embed=embed)
+            return
+            # embed = discord.Embed(description=f"Given index `{index}` not in queue")
+            # await ctx.send(embed=embed)
 
 
 
     @commands.command(aliases=config.music_play)
-    async def play(self, ctx, *, query):
+    async def play(self, ctx, *, query=None):
         """- Play a song from YouTube"""
+
+        # Do nothing if query is empty
+        if query == None:
+            return
 
         # Connect to the author's channel
         await ctx.invoke(self.join)
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+
+        # If a song from a playlist is given, ignore the playlist
+        if "&list=" in query:
+            query = query.split("&list=")[0]
 
         # Create and send an embed to confirm the author's input
         embed = discord.Embed(description=f"Adding `{query}` to queue...")
@@ -143,7 +155,6 @@ class Music(commands.Cog):
         # parameters for YoutubeDL
         parameters = {
             'noplaylist':           True,
-            # 'quiet':                False,
             'default_search':       'ytsearch',
             'format':               'bestaudio/best',
             'postprocessors': [{
@@ -201,7 +212,6 @@ class Music(commands.Cog):
             embed = discord.Embed(description="The queue is now empty")
             await ctx.send(embed=embed)
             return
-        
 
         # Options to reconnect rather than terminate song if disconnected by corrupt packets
         ffmpeg_options = {
@@ -210,6 +220,7 @@ class Music(commands.Cog):
         }
 
         # Retrieve the information of the current song from the queue
+        # and ignore if skipping the song
         if not skip:
             current_song = self.queue.pop(0)
             self.current = current_song
@@ -227,6 +238,7 @@ class Music(commands.Cog):
             embed.set_footer(text=f"Requested by {requester}")
             await ctx.send(embed=embed)
 
+        # if skip is True then this will cause an UnboundLocalError and will be caught
         try:
             # Start playing the song using FFmpeg and set the after callback to call this function and play the next song
             voice_client.play(discord.FFmpegPCMAudio(url, **ffmpeg_options), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
