@@ -11,7 +11,9 @@ class Music(commands.Cog):
         self.bot = bot
         self.queue = []
         self.current = None
+        self.now_playing = None
         self.disconnect_timers = {}
+        
 
 
     @commands.command(aliases=config.music['join'])
@@ -66,6 +68,10 @@ class Music(commands.Cog):
         """- Skips the current song and plays the next"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
         
+        if self.current is not None:
+            embed = discord.Embed(description=f"Skipping: **{self.current['title']}**")
+            await ctx.send(embed=embed)
+
         # Stop the current client
         if voice_client is not None:
             voice_client.stop()
@@ -138,15 +144,14 @@ class Music(commands.Cog):
         """- Play a song from YouTube"""
 
         # Do nothing if query is empty
-        if query == None or query == "":
+        if query == None or query == "" or query.isspace():
             return
-        
+
         # If song entries are separated by a comma, search and play for all
         if "," in query:
             queries = query.split(",")
             for i in queries:
                 await self.play(ctx, query=i)
-                print(i)
             return
 
 
@@ -201,7 +206,8 @@ class Music(commands.Cog):
         duration = f"{minutes:02d}:{seconds:02d}"
 
         # Display serached song info
-        embed = discord.Embed(description=f"`{len(self.queue) + 1}.` `[{duration}]` **{item['title']}**")
+        queue_pos = len(self.queue) + 1 if self.current is not None else len(self.queue)
+        embed = discord.Embed(description=f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
         await waiting_message.delete()
         await ctx.send(embed=embed)
 
@@ -228,10 +234,16 @@ class Music(commands.Cog):
         'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
         'options': '-vn',
         }
+        
+        if self.now_playing is not None:
+            try:
+                await self.now_playing.delete()
+            except:
+                pass
 
-        # Retrieve the information of the current song from the queue
-        # and ignore if skipping the song
         if not skip:
+            # Retrieve the information of the current song from the queue
+            # and ignore if skipping the song
             current_song = self.queue.pop(0)
             self.current = current_song
             url       = current_song['url']
@@ -246,7 +258,7 @@ class Music(commands.Cog):
                 color = 16711680
             )
             embed.set_footer(text=f"Requested by {requester}")
-            await ctx.send(embed=embed)
+            self.now_playing = await ctx.send(embed=embed)
 
         # if skip is True then this will cause an UnboundLocalError and will be caught
         try:
