@@ -12,7 +12,7 @@ class Music(commands.Cog):
         self.current = None
         self.now_playing = None
         self.disconnect_timers = {}
-        
+
 
 
     @commands.command(aliases=config.music['join'])
@@ -60,6 +60,13 @@ class Music(commands.Cog):
         self.queue.clear()
         self.current = None
 
+        # Delete the previous message containing the currently playing song if it exists
+        if self.now_playing is not None:
+            try:
+                await self.now_playing.delete()
+            except:
+                pass
+
 
 
     @commands.command(aliases=config.music['skip'])
@@ -67,6 +74,7 @@ class Music(commands.Cog):
         """- Skips the current song and plays the next in queue"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
         
+        # If there is a song currently playng, send an embed informing of the skip
         if self.current is not None:
             embed = discord.Embed(description=f"Skipping: **{self.current['title']}**")
             await ctx.send(embed=embed)
