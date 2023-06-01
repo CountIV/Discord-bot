@@ -78,6 +78,8 @@ class Ciphers(commands.Cog):
         # checks if the given message is morse or not
         if True in [True if s.upper() in alphanumerics else False for s in message] and "/" not in message:
             # Alphanumeric to morse
+            message = message.replace(".", " ")
+            message = message.replace("-", " ")
             converted = ""
             for char in message.upper():
                 if char in morse_map:
