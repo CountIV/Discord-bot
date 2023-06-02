@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import base64
 
 class Ciphers(commands.Cog):
     def __init__(self, bot):
@@ -18,6 +19,8 @@ class Ciphers(commands.Cog):
             else:
                 ciphered_letter = letter
             ciphered_message += ciphered_letter
+        
+        await ctx.send(ciphered_message)
 
 
     @commands.command()
@@ -48,7 +51,6 @@ class Ciphers(commands.Cog):
         embed = discord.Embed(description=f"{braille_message}")
         await ctx.send(embed=embed)
     
-
 
     @commands.command()
     async def morse(self, ctx, *, message):
@@ -112,6 +114,24 @@ class Ciphers(commands.Cog):
         embed = discord.Embed(description=f"{converted}")
         await ctx.send(embed=embed)
 
+
+    @commands.group(aliases=["base64"])
+    async def base(self, ctx):
+        """ - encode/decode messages to/from base64 """
+        if ctx.invoked_subcommand is None:
+            print("base: no parameters")
+
+    @base.command(aliases=["e"])
+    async def encode(self, ctx, *, message):
+        """ - base64 encode"""
+        response = base64.b64encode(message.encode("utf-8")).decode("utf-8")
+        await ctx.send(response)
+    
+    @base.command(aliases=["d"])
+    async def decode(self, ctx, *, message):
+        """ - based64 decode"""
+        response = base64.b64decode(message).decode("utf-8")
+        await ctx.send(response)
 
 
 async def setup(bot):
