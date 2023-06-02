@@ -1,6 +1,6 @@
 from PIL import ImageDraw
-from pieces import pieces
-from board import generate_board, board_size, square_size
+from utils.pieces import pieces
+from utils.board import generate_board, board_size, square_size
 
 
 def fen_visualizer(fen, white_to_move: bool):
