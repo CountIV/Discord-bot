@@ -18,14 +18,17 @@ for file_path in folder.glob("*.png"):
 
     # Determine the color based on the file name prefix
     if file_name.startswith(black):
-        color = "black"
+        colour = "black"
     elif file_name.startswith(white):
-        color = "white"
+        colour = "white"
     else:
         continue  # Skip files that don't match the expected naming convention
 
     # Remove the color prefix from the file name
-    piece = file_name[1:].lower()
+    if "Knight" in file_name:
+        piece = "N" if colour == 'white' else "n"
+    else:
+        piece = file_name[1] if colour == 'white' else file_name[1].lower()
 
     # Add the image to the corresponding dictionary
-    pieces[color][piece] = image
+    pieces[colour][piece] = image
