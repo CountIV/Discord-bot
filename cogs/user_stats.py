@@ -77,10 +77,10 @@ class Users(commands.Cog):
         top_emojis = emoji_counter.most_common(8)
 
         if top_words:
-            top_words_str = ", ".join([f"{word}" for word, count in top_words])
+            top_words_str = ", ".join([f"`{word}`" for word, count in top_words])
 
         if top_emojis:
-            top_emojis_str = "\n".join([f"{count}x{emoji}" for emoji, count in top_emojis])
+            top_emojis_str = "\n".join([f"`{count}`x {emoji}" for emoji, count in top_emojis])
 
         # Build the embed
         embed = discord.Embed(title="Messaging Stats", color=discord.Color.green())

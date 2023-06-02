@@ -48,7 +48,6 @@ async def reload_cogs(ctx):
                 await bot.load_extension(extension)
             except Exception as e:
                 print(e)
-            print(e)
 
     embed = discord.Embed(description=f"All cogs have been reloaded.")
     await ctx.send(embed=embed)
