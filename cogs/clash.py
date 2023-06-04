@@ -41,10 +41,10 @@ class Clash(commands.Cog):
         
         # Respond with appropriate message depending on the current time
         bot_response = None
-        if clash_start_time < current_time:
-            bot_response = "Clash is open right now, @everyone all aboard!"
-        elif clash_end_time < current_time:
+        if clash_end_time < current_time:
             bot_response = "Registration has ended, may your Clash be victorious!"
+        elif clash_start_time < current_time:
+            bot_response = "Clash is open right now, @everyone all aboard!"
         else:
             days = time_until_clash_start.days
             hours = time_until_clash_start.seconds // 3600
