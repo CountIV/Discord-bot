@@ -17,6 +17,10 @@ class Clash(commands.Cog):
         response = requests.get(api_url)
         data = response.json()
 
+        # If no to data is sent back
+        if data == []:
+            await ctx.send("No upcoming Clash found, stay tuned!")
+            return
 
         # Get the smallest, which also means the nearest clash, start and end date
         min_start_time = float("inf")
