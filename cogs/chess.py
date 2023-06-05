@@ -1,7 +1,7 @@
 import discord
-from io import BytesIO
 from discord.ext import commands
-from utils.fen_visualizer import fen_visualizer
+from utils.fen_visualizer import get_board
+from utils.piece_mobility import moveable_pieces, valid_moves
 
 
 
@@ -12,19 +12,10 @@ class Chess(commands.Cog):
 
 
     @commands.command()
-    async def visualize(self, ctx, fen, white_to_move=True):
+    async def visualize(self, ctx, fen):
         """- Draw a board using FEN notation"""
 
-        chessboard = fen_visualizer(fen, white_to_move)
-
-        # Conver the image object into a format compatible with discord.py
-        image_stream = BytesIO()
-        chessboard.save(image_stream, format="PNG")
-        image_stream.seek(0)
-        chessboard = discord.File(image_stream, filename='chessboard.png')
-
-        embed = discord.Embed()
-        embed.set_image(url="attachment://chessboard.png")
+        chessboard, embed = get_board(fen)
 
         await ctx.send(file=chessboard, embed=embed)
 
