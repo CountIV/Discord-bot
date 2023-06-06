@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from utils.fen_visualizer import get_board
-from utils.piece_mobility import moveable_pieces, valid_moves
+from utils.board_drawer import get_board
+from utils.piece_handler import moveable_pieces, valid_moves
 
 
 
