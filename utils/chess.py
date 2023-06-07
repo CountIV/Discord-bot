@@ -1,4 +1,5 @@
 class Piece:
+    movement_repeats = True
     movement_pattern = [
         (0, 0)
     ]
@@ -14,7 +15,15 @@ class Piece:
         # Get the offset of the new move
         difference = tuple(map(lambda x, y: y - x, old, new))
 
-        if difference in cls.movement_pattern:
+        movement_pattern = cls.movement_pattern[::]
+        if cls.movement_repeats:
+            for i in range(-7, 8):
+                if i == 0:
+                    continue
+                for j in cls.movement_pattern:
+                    movement_pattern.append((j[0]*i, j[1]*i))
+
+        if difference in movement_pattern:
             return True
 
         return False
