@@ -70,5 +70,6 @@ class Roll(commands.Cog):
         await ctx.send(embed=embed)
 
 
+
 async def setup(bot):
     await bot.add_cog(Roll(bot))

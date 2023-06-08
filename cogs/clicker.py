@@ -7,7 +7,8 @@ class ViewButton(discord.ui.View):
     def __init__(self):
         super().__init__()
         self.score = 0 # Initialize score that keeps track of how many times button has been clicked
-    
+
+
     # Define a button interaction handler that increases the score by one every click
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
     async def display(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -21,9 +22,11 @@ class ViewButton(discord.ui.View):
         await interaction.response.edit_message(embed=embed)
 
 
+
 class Clicker(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
 
     @commands.command(aliases=["cookie", "🍪"])
     async def clicker(self, ctx):
@@ -33,6 +36,7 @@ class Clicker(commands.Cog):
         view = ViewButton()
 
         await ctx.send(view=view)
+
 
 
 async def setup(bot):

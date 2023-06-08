@@ -14,7 +14,6 @@ class Music(commands.Cog):
         self.disconnect_timers = {}
 
 
-
     @commands.command(aliases=config.music['join'])
     async def join(self, ctx):
         """- Join the voice channel of the author"""
@@ -33,7 +32,6 @@ class Music(commands.Cog):
             voice_client = await channel.connect()
 
 
-
     @commands.command(aliases=config.music['leave'])
     async def leave(self, ctx):
         """- Disconnect from the voice channel"""
@@ -44,7 +42,6 @@ class Music(commands.Cog):
         # Disconnect from the voice channel it is in
         if voice_client and voice_client.is_connected():
             await voice_client.disconnect()
-
 
 
     @commands.command(aliases=config.music['clear'])
@@ -68,7 +65,6 @@ class Music(commands.Cog):
                 pass
 
 
-
     @commands.command(aliases=config.music['skip'])
     async def skip(self, ctx):
         """- Skips the current song and plays the next in queue"""
@@ -88,7 +84,6 @@ class Music(commands.Cog):
             await self.play_song(ctx, skip=True)
         else:
             self.current = None
-
 
 
     @commands.command(aliases=config.music['queue'])
@@ -125,7 +120,6 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
 
-
     @commands.command(aliases=config.music['remove'])
     async def remove(self, ctx, index=-1):
         """- Remove a song from a given index, assuming the last added if not specified"""
@@ -146,7 +140,6 @@ class Music(commands.Cog):
             return
             # embed = discord.Embed(description=f"Given index `{index}` not in queue")
             # await ctx.send(embed=embed)
-
 
 
     @commands.command(aliases=config.music['play'])
@@ -229,7 +222,6 @@ class Music(commands.Cog):
             await self.play_song(ctx)
 
 
-
     async def play_song(self, ctx, skip=False):
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
@@ -280,7 +272,6 @@ class Music(commands.Cog):
             pass
 
 
-
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         """- Sets a timer that disconnects the bot if there are no other users in the voice channel"""
@@ -296,7 +287,6 @@ class Music(commands.Cog):
                     self.disconnect_timers[voice_channel.guild.id].cancel()
                 # set the timer for 4 seconds
                 self.disconnect_timers[voice_channel.guild.id] = self.bot.loop.call_later(4, self.disconnect_from_empty_channel, voice_channel)
-
 
 
     def disconnect_from_empty_channel(self, voice_channel):

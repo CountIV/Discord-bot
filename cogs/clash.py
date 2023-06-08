@@ -7,6 +7,7 @@ class Clash(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+
     @commands.command(help='- Informs when the next Clash starts')
     async def clash(self, ctx):
         # API configuration
@@ -57,6 +58,8 @@ class Clash(commands.Cog):
             bot_response = f"Next Clash starts in {days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
 
         await ctx.send(bot_response)
+
+
 
 async def setup(bot):
     await bot.add_cog(Clash(bot))

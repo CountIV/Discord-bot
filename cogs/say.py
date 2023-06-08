@@ -11,5 +11,6 @@ class Say(commands.Cog):
         await ctx.send(message)
 
 
+
 async def setup(bot):
     await bot.add_cog(Say(bot))

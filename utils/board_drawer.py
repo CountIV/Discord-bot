@@ -48,6 +48,7 @@ def get_pieces():
     for file_path in folder.glob("*.png"):
         file_name = file_path.stem
         image = Image.open(file_path)
+        image = image.resize((160, 160))
 
         # Determine the color based on the file name prefix
         if file_name.startswith(black):
@@ -88,14 +89,14 @@ def draw(fen, white_to_move: bool):
             col += int(char)
         else:
             colour = "white" if char == char.upper() else "black"
-            piece = get_pieces[colour][char]
+            piece = get_pieces()[colour][char]
 
-            x = col * 8
-            y = row * 8
+            x = col * 128
+            y = row * 128
 
             # Determine the position of the chess piece image
-            piece_x = x + (8 - piece.size[0]) // 2
-            piece_y = y + (8 - piece.size[1]) // 2
+            piece_x = x + (128 - piece.size[0]) // 2
+            piece_y = y + (128 - piece.size[1]) // 2
 
             # Paste the chess piece image onto the chessboard
             board.alpha_composite(piece, (piece_x, piece_y))

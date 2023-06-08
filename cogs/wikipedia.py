@@ -6,20 +6,26 @@ from discord.ext import commands
 class Wikipedia(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
+
     @commands.command()
     async def wiki(self, ctx, *, search_query):
         """- Searches wikipedia for the given search_query"""
         api = "https://en.wikipedia.org/w/api.php"
 
+        # List of words that are usually not capitalized in titles
         exceptions = ['a', 'an', 'the', 
                       'and', 'but', 'or', 'nor', 'for', 'so', 'yet', 
                       'at', 'by', 'for', 'from', 'in', 'into', 'of', 'off', 'on', 'onto', 'out', 'over', 'to', 'up', 'with'
                       ]
+        
+        # Reformatting the search query to improve results
         search_query = search_query.split(" ")
         search_query = [s.capitalize() if s not in exceptions else s for s in search_query]
         search_query[0] = search_query[0].capitalize()
         search_query = " ".join(search_query)
+
+        # Parameters for the wikipedia api
         params = {
             "action": "query",
             "format": "json",
@@ -55,6 +61,7 @@ class Wikipedia(commands.Cog):
         except KeyError:
             # If the API response is not as expected, display an error
             await ctx.send("An error occurred while retrieving the Wikipedia page.")
+
 
 
 async def setup(bot):
