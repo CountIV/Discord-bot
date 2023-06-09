@@ -20,6 +20,9 @@ def generate_board(board_size, white_to_move=True):
     # Create a drawing object
     draw = ImageDraw.Draw(image)
 
+    # Borders for the board
+    draw.rectangle([0, 0, square_size * 8 + 3, square_size * 8 + 3], fill=(231, 195, 139, 255))
+
     # Iterate over the board squares and draw
     for row in range(board_size):
         for col in range(board_size):
@@ -29,7 +32,7 @@ def generate_board(board_size, white_to_move=True):
             draw.rectangle([x, y, x + square_size, y + square_size], fill=square_color)
 
     # Define the font
-    font = ImageFont.truetype('verdana.ttf', 32)
+    font = ImageFont.truetype('arialbd.ttf', 32)
     text_colour = (231, 195, 139, 255)
 
     # Draw coordinate labels on the right and bottom
@@ -38,7 +41,7 @@ def generate_board(board_size, white_to_move=True):
         y = (i + 0.58) * square_size
         label = str(board_size - i) if white_to_move else str(i + 1)
         text_width, text_height = draw.textsize(label, font=font)
-        draw.text((x + square_size // 2 // 2, y - text_height // 2),
+        draw.text((x + square_size // 3 // 2, y - text_height // 2),
                   label, fill=text_colour, font=font, anchor="mm")
 
     for i in range(board_size):
@@ -47,11 +50,11 @@ def generate_board(board_size, white_to_move=True):
         label = chr(97 + i) if white_to_move else chr(97 + board_size - i - 1)
         label = label.upper()
         text_width, text_height = draw.textsize(label, font=font)
-        draw.text((x - text_width // 2, y + square_size // 2 // 2),
+        draw.text((x - text_width // 2, y + square_size // 3 // 2),
                   label, fill=text_colour, font=font, anchor="mm")
     
     # Trim the bottom and right corners
-    trim = 64
+    trim = 90
     old_width, old_height = image.size
     new_width = old_width - trim
     new_height = old_height - trim
