@@ -1,12 +1,12 @@
 import discord
 from io import BytesIO
 from pathlib import Path
-from PIL import ImageDraw, Image
+from PIL import ImageDraw, Image, ImageFont
 
 
 
 # Create a new image with a white background
-def generate_board(board_size):
+def generate_board(board_size, white_to_move=True):
     # Set the colours
     light_color = (240, 217, 181, 255)
     dark_color = (181, 136, 99, 255)
@@ -15,7 +15,7 @@ def generate_board(board_size):
     square_size = 128
     image_size = board_size * square_size
 
-    image = Image.new('RGBA', (image_size, image_size), light_color)
+    image = Image.new('RGBA', (image_size + square_size, image_size + square_size), (155, 111, 74, 255))
 
     # Create a drawing object
     draw = ImageDraw.Draw(image)
@@ -27,6 +27,36 @@ def generate_board(board_size):
             y = row * square_size
             square_color = light_color if (row + col) % 2 == 0 else dark_color
             draw.rectangle([x, y, x + square_size, y + square_size], fill=square_color)
+
+    # Define the font
+    font = ImageFont.truetype('verdana.ttf', 32)
+    text_colour = (231, 195, 139, 255)
+
+    # Draw coordinate labels on the right and bottom
+    for i in range(board_size):
+        x = image_size
+        y = (i + 0.58) * square_size
+        label = str(board_size - i) if white_to_move else str(i + 1)
+        text_width, text_height = draw.textsize(label, font=font)
+        draw.text((x + square_size // 2 // 2, y - text_height // 2),
+                  label, fill=text_colour, font=font, anchor="mm")
+
+    for i in range(board_size):
+        x = (i + 0.58) * square_size
+        y = image_size
+        label = chr(97 + i) if white_to_move else chr(97 + board_size - i - 1)
+        label = label.upper()
+        text_width, text_height = draw.textsize(label, font=font)
+        draw.text((x - text_width // 2, y + square_size // 2 // 2),
+                  label, fill=text_colour, font=font, anchor="mm")
+    
+    # Trim the bottom and right corners
+    trim = 64
+    old_width, old_height = image.size
+    new_width = old_width - trim
+    new_height = old_height - trim
+
+    image = image.crop((0, 0, new_width, new_height))
 
     return image
 
@@ -76,7 +106,7 @@ def draw(fen, white_to_move: bool):
     if white_to_move:
         fen = fen.split("/")
         fen = "/".join(reversed(fen))
-    board = generate_board(8)
+    board = generate_board(8, white_to_move)
     draw = ImageDraw.Draw(board)
     row = 8 - 1
     col = 0

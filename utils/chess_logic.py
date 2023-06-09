@@ -41,3 +41,8 @@ def get_all_moves(fen):
     for i in pieces:
         all_moves.append(get_legal_moves(fen, i))
     return all_moves
+
+
+if __name__ == "__main__":
+    a = get_all_moves("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2")
+    print(a)
