@@ -8,7 +8,7 @@ class Ping(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx, *, user: discord.Member=None):
-        """Tests server ping"""
+        """Tests the server ping for a specific user or the bot if none are specified."""
 
         # If no user is mentioned, respond with the server's ping
         if user == None:

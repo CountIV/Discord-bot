@@ -28,9 +28,9 @@ class Clicker(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(aliases=["cookie", "🍪"])
+    @commands.command(aliases=["cookie", "🍪", "counter"])
     async def clicker(self, ctx):
-        """A simple clicker game"""
+        """Initiates a simple counter app."""
 
         # Creates an instance of the ViewButton class
         view = ViewButton()

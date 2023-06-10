@@ -13,7 +13,7 @@ class Users(commands.Cog):
 
     @commands.command()
     async def stats(self, ctx, user: discord.User):
-        """Display messaging stats for a user"""
+        """Shows messaging statistics for a user."""
 
         # Start logging the time used to calculate the user's stats
         start_time = time.time()

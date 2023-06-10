@@ -18,7 +18,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['join'])
     async def join(self, ctx):
-        """Join the voice channel of the author"""
+        """Joins the voice channel of the user who issued the command."""
         
         # Get the voice channel of the author
         channel = ctx.author.voice.channel
@@ -36,7 +36,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['leave'])
     async def leave(self, ctx):
-        """Disconnect from the voice channel"""
+        """Disconnects from the voice channel."""
 
         # Get the voice client
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
@@ -48,7 +48,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['clear'])
     async def clear(self, ctx):
-        """Stops playing the current song and clears the queue"""
+        """Stops the current song playback and clears the queue."""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
         # If the voice client is connected and playing, stop the playback
@@ -69,7 +69,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['skip'])
     async def skip(self, ctx):
-        """Skips the current song and plays the next in queue"""
+        """Skips the current song and plays the next one in the queue."""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
         
         # If there is a song currently playng, send an embed informing of the skip
@@ -90,7 +90,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['queue'])
     async def queue(self, ctx):
-        """Shows the currently playing song and queue"""
+        """Displays the currently playing song and the queue."""
 
         # If the queue is empty, send an embed message indicating that
         if len(self.queue) == 0:
@@ -124,7 +124,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['remove'])
     async def remove(self, ctx, index=-1):
-        """Remove a song from a given index, assuming the last added if not specified"""
+        """Removes a song from the queue at the given index. If no index is specified, it removes the last added song."""
         index = int(index)
         try:
             # if the given index is 0, remove the currently playing song
@@ -146,7 +146,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['loop'])
     async def loop(self, ctx):
-        """Loops the current queue. This does not include the currently playing song"""
+        """Enables looping of the current queue, excluding the currently playing song."""
         self.loop = not self.loop
         embed = discord.Embed(description=f"Looping is now `{self.loop}`")
         await ctx.send(embed=embed)
@@ -154,7 +154,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['move'])
     async def move(self, ctx, index1, index2):
-        """Move a song from one place in the queue to another"""
+        """Moves a song from one position in the queue to another."""
         index1 = int(index1)
         index2 = int(index2)
 
@@ -181,7 +181,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['shuffle'])
     async def shuffle(self, ctx):
-        """Shuffles the queue"""
+        """Shuffles the queue."""
         random.shuffle(self.queue)
         embed = discord.Embed(description=f"Shuffled queue")
         await ctx.send(embed=embed)
@@ -216,7 +216,6 @@ class Music(commands.Cog):
             # If the playlist code is valid, clear the queue and play the playlist
             self.queue.clear()
             await self.play(ctx, position="-1", query=playlist)
-
 
 
     @commands.command(aliases=config.music['play'])
