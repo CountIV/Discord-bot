@@ -30,7 +30,7 @@ class Clicker(commands.Cog):
 
     @commands.command(aliases=["cookie", "🍪"])
     async def clicker(self, ctx):
-        """- A simple clicker game"""
+        """A simple clicker game"""
 
         # Creates an instance of the ViewButton class
         view = ViewButton()

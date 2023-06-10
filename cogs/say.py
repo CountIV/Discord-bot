@@ -7,7 +7,7 @@ class Say(commands.Cog):
 
     @commands.command()
     async def repeat(self, ctx, *, message):
-        """- Repeats the provided message."""
+        """Repeats the provided message."""
         await ctx.send(message)
 
 

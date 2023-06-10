@@ -10,7 +10,7 @@ class QR(commands.Cog):
 
     @commands.command()
     async def qr(self, ctx, *, link):
-        """- Converts a given link to a QR code."""
+        """Converts a given link to a QR code."""
         # Set API endpoint and parameters
         api = "https://api.qrserver.com/v1/create-qr-code/"
         parameters = {"data":link, "size":"300x300"}

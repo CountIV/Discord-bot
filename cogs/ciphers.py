@@ -9,7 +9,7 @@ class Ciphers(commands.Cog):
 
     @commands.command()
     async def caesar(self, ctx, *, message):
-        """ - Applies Ceasar cipher to the message """
+        """Applies Ceasar cipher to the message """
         
         ciphered_message = ""
 
@@ -33,7 +33,7 @@ class Ciphers(commands.Cog):
 
     @commands.command()
     async def braille(self, ctx, *, message):
-        """- Converts given message to braille"""
+        """Converts given message to braille"""
 
         # Dict map of letters and numbers to their braille representation
         braille_map = {
@@ -66,7 +66,7 @@ class Ciphers(commands.Cog):
 
     @commands.command()
     async def morse(self, ctx, *, message):
-        """- Converts given message to morse code and vice-versa"""
+        """Converts given message to morse code and vice-versa"""
         morse_map = {
         'A': '.-',      'B': '-...',    'C': '-.-.', 
         'D': '-..',     'E': '.',       'F': '..-.', 
@@ -130,7 +130,7 @@ class Ciphers(commands.Cog):
     # Encodes messages to and from base64 using subcommands
     @commands.group(aliases=["base64"])
     async def base(self, ctx):
-        """ - encode/decode messages to/from base64 """
+        """encode/decode messages to/from base64 """
         if ctx.invoked_subcommand is None:
             print("base: no parameters")
 

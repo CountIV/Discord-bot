@@ -9,7 +9,7 @@ class Deep_Learning(commands.Cog):
 
     @commands.command()
     async def ai(self, ctx, message):
-        """- Recognise a digit in image format using deep learning"""
+        """Recognise a digit in image format using deep learning"""
         url = message
         # Only accept discord links
         if url[0:26] == "https://cdn.discordapp.com":

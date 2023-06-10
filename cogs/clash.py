@@ -8,7 +8,7 @@ class Clash(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(help='- Informs when the next Clash starts')
+    @commands.command(help='Informs when the next Clash starts')
     async def clash(self, ctx):
         # API configuration
         api_key = open(".env/riot_api_key", "r").read()

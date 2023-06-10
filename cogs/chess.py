@@ -10,7 +10,7 @@ class Chess(commands.Cog):
 
     @commands.command()
     async def visualize(self, ctx, *, fen):
-        """- Draw a board using FEN notation"""
+        """Draw a board using FEN notation"""
         chessboard, embed = get_board(fen)
         await ctx.send(file=chessboard, embed=embed)
 

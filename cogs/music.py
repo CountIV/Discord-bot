@@ -16,7 +16,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['join'])
     async def join(self, ctx):
-        """- Join the voice channel of the author"""
+        """Join the voice channel of the author"""
         
         # Get the voice channel of the author
         channel = ctx.author.voice.channel
@@ -34,7 +34,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['leave'])
     async def leave(self, ctx):
-        """- Disconnect from the voice channel"""
+        """Disconnect from the voice channel"""
 
         # Get the voice client
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
@@ -46,7 +46,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['clear'])
     async def clear(self, ctx):
-        """- Stops playing the current song and clears the queue"""
+        """Stops playing the current song and clears the queue"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
         # If the voice client is connected and playing, stop the playback
@@ -67,7 +67,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['skip'])
     async def skip(self, ctx):
-        """- Skips the current song and plays the next in queue"""
+        """Skips the current song and plays the next in queue"""
         voice_client = get(self.bot.voice_clients, guild=ctx.guild)
         
         # If there is a song currently playng, send an embed informing of the skip
@@ -88,7 +88,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['queue'])
     async def queue(self, ctx):
-        """- Shows the currently playing song and queue"""
+        """Shows the currently playing song and queue"""
 
         # If the queue is empty, send an embed message indicating that
         if len(self.queue) == 0:
@@ -122,7 +122,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['remove'])
     async def remove(self, ctx, index=-1):
-        """- Remove a song from a given index, assuming the last added if not specified"""
+        """Remove a song from a given index, assuming the last added if not specified"""
         index = int(index)
         try:
             # if the given index is 0, remove the currently playing song
@@ -144,7 +144,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['play'])
     async def play(self, ctx, *, query=None):
-        """- Play a song from YouTube"""
+        """Play a song from YouTube"""
 
         # Do nothing if query is empty
         if query == None or query == "" or query.isspace():
@@ -274,7 +274,7 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        """- Sets a timer that disconnects the bot if there are no other users in the voice channel"""
+        """Sets a timer that disconnects the bot if there are no other users in the voice channel"""
         # get the voice channel from the before or after object
         voice_channel = before.channel or after.channel
         if voice_channel:

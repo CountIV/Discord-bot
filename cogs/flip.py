@@ -7,7 +7,7 @@ class Flip(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(help='- Flips a coin')
+    @commands.command(help='Flips a coin')
     async def flip(self, ctx):
         # Random Choice
         flip = choice(["Heads", "Tails"])

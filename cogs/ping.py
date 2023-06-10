@@ -8,14 +8,14 @@ class Ping(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx, *, user: discord.Member=None):
-        """- Tests server ping"""
+        """Tests server ping"""
 
         # If no user is mentioned, respond with the server's ping
         if user == None:
             await ctx.send(f"Ping is {round(self.bot.latency * 1000)}ms")
             return
         
-        """- Alternative: Ping someone"""
+        """Alternative: Ping someone"""
         await ctx.send(user.mention)
 
 
