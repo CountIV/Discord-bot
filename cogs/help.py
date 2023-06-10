@@ -87,7 +87,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
             text_signature += " "+s
 
         # Combine the segments and send an embed
-        text += f"```yaml\n{prefix}{text_alias} {text_signature}```"
+        text += f"```yaml\n{prefix[0]}{text_alias} {text_signature}```"
 
         embed = discord.Embed(title=f"{command.name}", description=f"{text}")
         await self.get_destination().send(embed=embed)
