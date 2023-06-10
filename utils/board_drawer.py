@@ -32,7 +32,10 @@ def generate_board(board_size, white_to_move=True):
             draw.rectangle([x, y, x + square_size, y + square_size], fill=square_color)
 
     # Define the font
-    font = ImageFont.truetype('arialbd.ttf', 32)
+    try:
+        font = ImageFont.truetype('arialbd.ttf', 32)
+    except:
+        font = ImageFont.truetype('/usr/share/fonts/dejavu/DejaVuSansMono-Bold.ttf', 32)
     text_colour = (231, 195, 139, 255)
 
     # Draw coordinate labels on the right and bottom
