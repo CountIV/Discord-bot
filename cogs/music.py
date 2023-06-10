@@ -187,10 +187,41 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
     
 
+    @commands.command()
+    async def playlist(self, ctx, *, code=None):
+        """Convert the current queue into a playlist code. If a playlist code is given, play that playlist"""
+        if code is None:
+            # If the queue is empty, do nothing
+            if len(self.queue) == 0:
+                embed = discord.Embed(description="The queue is empty")
+                await ctx.send(embed=embed)
+                return
+
+            # Create a playlist code from the queue
+            code = f"{self.current['id']}"
+            for song in self.queue:
+                code += f"{song['id']}"
+
+            # Send the playlist code
+            await ctx.send(f"Playlist code:\n```{code}```")
+        else:
+            # If the playlist code is invalid, do nothing
+            if code == "":
+                return
+            
+            playlist = ""
+            for i in range(0, len(code), 11):
+                playlist += f"{code[i:i+11]}!, "
+
+            # If the playlist code is valid, clear the queue and play the playlist
+            self.queue.clear()
+            await self.play(ctx, position="-1", query=playlist)
+
+
+
     @commands.command(aliases=config.music['play'])
     async def play(self, ctx, position="-1", *, query=None):
         """Plays a requested song. Optionally, specify an index to add the song to the queue at a specific position."""
-
         # If the index is not an integer, assume that the query is the index and the index is -1
         try:
             if position == "-1":
@@ -224,6 +255,8 @@ class Music(commands.Cog):
         if "&list=" in query:
             query = query.split("&list=")[0]
 
+        query = query.strip()
+
         # Create and send an embed to confirm the author's input
         embed = discord.Embed(description=f"Adding `{query}` to queue...")
         waiting_message = await ctx.send(embed=embed)
@@ -253,6 +286,7 @@ class Music(commands.Cog):
                     'title':        info['title'], 
                     'duration':     info['duration'], 
                     'uploader':     info['uploader'],
+                    'id':           info['id'],
                     'requester':    ctx.author,
             }
         except IndexError:

@@ -27,9 +27,9 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
                     text_signature = text_signature.replace("  ", " ")
                     # Format the help text
                     if len(mapping[cog]) <= 1:
-                        command_info = f"<>{prefix[0]}{command.name} {text_signature} {'―'*(24-len(command.name)-len(text_signature))} {command.short_doc.lower()}<>"
+                        command_info = f"<>{prefix[0]}{command.name} {text_signature} {'―'*(24-len(command.name)-len(text_signature))} {command.short_doc}<>"
                     else:
-                        command_info = f"{prefix[0]}{command.name} {text_signature} {'―'*(24-len(command.name)-len(text_signature))} {command.short_doc.lower()}\n"
+                        command_info = f"{prefix[0]}{command.name} {text_signature} {'―'*(24-len(command.name)-len(text_signature))} {command.short_doc}\n"
                     cog_help += command_info
                 if cog_help:
                     help_text += f"{cog_help}\n"
@@ -60,12 +60,12 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
                 final_message.append("\n".join(sorted(message[i].split("\n"))))
         final_message = "\n\n".join(final_message)
 
-        # Wrap the message in a code block
-        final_message = "```yaml\nCommands:" + final_message
-        final_message += "```"
-        
-        await self.get_destination().send(final_message)
-
+        # Wrap the message in a code block and send as segments to avoid the 2000 character limit
+        parts = final_message.split("\n\n")
+        await self.get_destination().send(f"# Commands")
+        for part in parts:
+            if len(part) > 10:
+                await self.get_destination().send(f"```yaml\n{part}```".replace("  ", " ―"))
 
     # Help command with arguments
     async def send_command_help(self, command):
