@@ -1,3 +1,4 @@
+import random
 import discord
 from yt_dlp import YoutubeDL
 from discord.utils import get
@@ -9,6 +10,7 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.queue = []
+        self.loop = False
         self.current = None
         self.now_playing = None
         self.disconnect_timers = {}
@@ -142,9 +144,66 @@ class Music(commands.Cog):
             # await ctx.send(embed=embed)
 
 
+    @commands.command(aliases=config.music['loop'])
+    async def loop(self, ctx):
+        """Loops the current queue. This does not include the currently playing song"""
+        self.loop = not self.loop
+        embed = discord.Embed(description=f"Looping is now `{self.loop}`")
+        await ctx.send(embed=embed)
+    
+
+    @commands.command(aliases=config.music['move'])
+    async def move(self, ctx, index1, index2):
+        """Move a song from index1 to index2"""
+        index1 = int(index1)
+        index2 = int(index2)
+
+        # If the given indices are the same, do nothing
+        if index1 == index2:
+            return
+        
+        # If one of the indices is 0, tell the user that they cannot move the currently playing song
+        if index1 == 0 or index2 == 0:
+            embed = discord.Embed(description=f"Cannot move currently playing song")
+            await ctx.send(embed=embed)
+            return
+        
+        # Move the song from index1 to index2
+        try:
+            song = self.queue.pop(index1-1)
+            self.queue.insert(index2-1, song)
+            embed = discord.Embed(description=f"Moved `{song['title']}` from `{index1}.` to `{index2}.`")
+            await ctx.send(embed=embed)
+        except IndexError:
+            embed = discord.Embed(description=f"Given index not in queue")
+            await ctx.send(embed=embed)
+
+
+    @commands.command(aliases=config.music['shuffle'])
+    async def shuffle(self, ctx):
+        """Shuffles the queue"""
+        random.shuffle(self.queue)
+        embed = discord.Embed(description=f"Shuffled queue")
+        await ctx.send(embed=embed)
+    
+
     @commands.command(aliases=config.music['play'])
-    async def play(self, ctx, *, query=None):
-        """Play a song from YouTube"""
+    async def play(self, ctx, position="-1", *, query=None):
+        """Plays a song from YouTube. Add an index to add the song to the queue at the specified position"""
+
+        # If the index is not an integer, assume that the query is the index and the index is -1
+        try:
+            if position == "-1":
+                position = int(position)
+            else:
+                position = int(position) - 1
+        except ValueError:
+            query = f"{position} {query}"
+            position = -1
+        
+        # If the index is larger than the queue, set it to the last index
+        if int(position) > len(self.queue):
+            position = -1
 
         # Do nothing if query is empty
         if query == None or query == "" or query.isspace():
@@ -156,7 +215,6 @@ class Music(commands.Cog):
             for i in queries:
                 await self.play(ctx, query=i)
             return
-
 
         # Connect to the author's channel
         await ctx.invoke(self.join)
@@ -209,13 +267,16 @@ class Music(commands.Cog):
         duration = f"{minutes:02d}:{seconds:02d}"
 
         # Display serached song info
-        queue_pos = len(self.queue) + 1 if self.current is not None else len(self.queue)
+        if position == -1:
+            queue_pos = len(self.queue) + 1 if self.current is not None else len(self.queue)
+        else:
+            queue_pos = position + 1
         embed = discord.Embed(description=f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
         await waiting_message.delete()
         await ctx.send(embed=embed)
 
         # Add song to the queue
-        self.queue.append(item)
+        self.queue.insert(position, item)
 
         # Play the song if none are currently playing
         if not voice_client.is_playing():
@@ -248,6 +309,11 @@ class Music(commands.Cog):
             # Retrieve the information of the current song from the queue
             # and ignore if skipping the song
             current_song = self.queue.pop(0)
+
+            # If looping is enabled, add the current song back to the queue
+            if self.loop:
+                self.queue.append(current_song)
+
             self.current = current_song
             url       = current_song['url']
             title     = current_song['title']
