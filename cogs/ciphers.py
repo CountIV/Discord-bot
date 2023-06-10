@@ -127,6 +127,26 @@ class Ciphers(commands.Cog):
         await ctx.send(embed=embed)
 
 
+    @commands.command()
+    async def binary(self, ctx, message):
+        """Converts given message to binary and vice-versa"""
+        binary_message = ""
+        # checks if the given message is binary or not
+        if True in [True if s in ["0", "1"] else False for s in message]:
+            # Binary to alphanumeric
+            message = message.strip().split(" ")
+            for char in message:
+                binary_message += chr(int(char, 2))
+        else:
+            # Alphanumeric to binary
+            for char in message:
+                binary_message += f"{ord(char):08b} "
+            binary_message = binary_message.strip()
+
+        embed = discord.Embed(description=f"{binary_message}")
+        await ctx.send(embed=embed)
+
+
     # Encodes messages to and from base64 using subcommands
     @commands.group(aliases=["base64"])
     async def base(self, ctx):
