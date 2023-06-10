@@ -154,7 +154,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['move'])
     async def move(self, ctx, index1, index2):
-        """Move a song from index1 to index2"""
+        """Move a song from one place in the queue to another"""
         index1 = int(index1)
         index2 = int(index2)
 
@@ -189,7 +189,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['play'])
     async def play(self, ctx, position="-1", *, query=None):
-        """Plays a song from YouTube. Add an index to add the song to the queue at the specified position"""
+        """Plays a song from YouTube. Add an index to the start to add the song to the queue at the specified position"""
 
         # If the index is not an integer, assume that the query is the index and the index is -1
         try:

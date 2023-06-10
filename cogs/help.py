@@ -73,7 +73,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         if len(aliases) == 1:
             text_alias = aliases[0]
         else:
-            text_alias = f"{f' | {prefix}'.join(aliases)}"
+            text_alias = f"{f' | {prefix[0]}'.join(aliases)}"
         
         # Get the arguments of the command
         signature = command.signature
@@ -82,7 +82,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         # Format the arguments
         text_signature = ""
         for s in signature:
-            for i in [("=None", ""), ("=False", ""), ("=True", ""), ("[", "<"), ("]", ">")]:
+            for i in [("=None", ""), ("=False", ""), ("=True", ""), ("[", "<"), ("]", ">"), ("=-1", "")]:
                 s = s.replace(i[0], i[1])
             text_signature += " "+s
 
