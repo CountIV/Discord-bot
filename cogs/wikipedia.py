@@ -10,7 +10,7 @@ class Wikipedia(commands.Cog):
 
     @commands.command()
     async def wiki(self, ctx, *, search_query):
-        """Searches wikipedia for the given search_query"""
+        """Searches wikipedia for the given search query"""
         api = "https://en.wikipedia.org/w/api.php"
 
         # List of words that are usually not capitalized in titles

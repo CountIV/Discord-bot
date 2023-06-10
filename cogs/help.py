@@ -13,16 +13,24 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         for cog in mapping:
             if cog is not None:
                 cog_help = ""
-                if len(mapping[cog]) <= 1:
-                    # If there is only one command in the cog add "<>" to either side
-                    command = mapping[cog][0]
-                    command_info = f"<>{prefix[0]}{command.name} {'―'*(10-len(command.name))} {command.short_doc.lower()}<>"
+                for command in mapping[cog]:
+                    # Get the arguments of the command
+                    signature = command.signature
+                    signature = signature.split(" ")
+                    # Format the arguments
+                    text_signature = ""
+                    for s in signature:
+                        for i in [("=None", ""), ("=False", ""), ("=True", ""), ("[", "<"), ("]", ">"), ("=-1", ""), ("=1d6", "")]:
+                            s = s.replace(i[0], i[1])
+                        text_signature += " "+s
+                    text_signature = text_signature.strip()
+                    text_signature = text_signature.replace("  ", " ")
+                    # Format the help text
+                    if len(mapping[cog]) <= 1:
+                        command_info = f"<>{prefix[0]}{command.name} {text_signature} {'―'*(24-len(command.name)-len(text_signature))} {command.short_doc.lower()}<>"
+                    else:
+                        command_info = f"{prefix[0]}{command.name} {text_signature} {'―'*(24-len(command.name)-len(text_signature))} {command.short_doc.lower()}\n"
                     cog_help += command_info
-                else:
-                    # If there are multiple commands in the cog add it normally
-                    for command in mapping[cog]:
-                        command_info = f"{prefix[0]}{command.name} {'―'*(10-len(command.name))} {command.short_doc.lower()}\n"
-                        cog_help += command_info
                 if cog_help:
                     help_text += f"{cog_help}\n"
 
