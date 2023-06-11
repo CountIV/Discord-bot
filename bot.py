@@ -79,6 +79,8 @@ async def restart(ctx, target_cog=None):
     elapsed_time_formatted = f"{elapsed_time:.2f}s"
     embed.set_footer(text=f"Boot time: {elapsed_time_formatted}")
 
+    print(f"{'―' * 32}\nRestarted {target} in {elapsed_time_formatted}")
+
     await waiting.edit(embed=embed)
 
 

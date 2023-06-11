@@ -58,6 +58,7 @@ class Music(commands.Cog):
         self.queue.clear()
         self.current = None
 
+        await self.bot.change_presence(activity=None)
         # Delete the previous message containing the currently playing song if it exists
         if self.now_playing is not None:
             try:
@@ -84,6 +85,7 @@ class Music(commands.Cog):
         if len(self.queue):
             await self.play_song(ctx, skip=True)
         else:
+            await self.bot.change_presence(activity=None)
             self.current = None
 
 
@@ -116,7 +118,7 @@ class Music(commands.Cog):
 
         # Set a footer for any currently playing song if one exists
         if self.current is not None:
-            embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
+            embed.set_footer(text=f"Currently playing:\n{self.current['title']}", icon_url=ctx.author.avatar_url)
 
         await ctx.send(embed=embed)
 
@@ -205,7 +207,7 @@ class Music(commands.Cog):
             await ctx.send(f"Playlist code:\n```yaml\n{code}<>```")
         else:
             # If the playlist code is invalid, do nothing
-            if len(code) % 11 != 2:
+            if len(code) % 11 != 2 and "<>" not in code:
                 embed = discord.Embed(description="Invalid playlist code", color=discord.Color.red())
                 await ctx.send(embed=embed)
                 return
@@ -333,6 +335,8 @@ class Music(commands.Cog):
                 await self.now_playing.delete()
             except:
                 pass
+        else:
+            await self.bot.change_presence(activity=None)
         
         # If the queue is empty, send the relevant response
         if not self.queue:
