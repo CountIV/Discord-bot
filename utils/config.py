@@ -11,7 +11,7 @@ admin_role = config.get('Discord', 'admin_role')
 
 # Aliases
 music = {}
-for command in ['join', 'leave', 'play', 'clear', 'skip', 'queue', 'remove', 'loop', 'move', 'shuffle']:
+for command in ['join', 'leave', 'play', 'clear', 'skip', 'queue', 'remove', 'loop', 'move', 'shuffle', 'playlist']:
     music[command] = config.get('Aliases', f'music_{command}').split(", ")
 
 

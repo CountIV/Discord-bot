@@ -19,7 +19,6 @@ class Music(commands.Cog):
     @commands.command(aliases=config.music['join'])
     async def join(self, ctx):
         """Joins the voice channel of the user who issued the command."""
-        
         # Get the voice channel of the author
         channel = ctx.author.voice.channel
 
@@ -150,7 +149,7 @@ class Music(commands.Cog):
         self.loop = not self.loop
         embed = discord.Embed(description=f"Looping is now `{self.loop}`")
         await ctx.send(embed=embed)
-    
+
 
     @commands.command(aliases=config.music['move'])
     async def move(self, ctx, index1, index2):
@@ -185,11 +184,11 @@ class Music(commands.Cog):
         random.shuffle(self.queue)
         embed = discord.Embed(description=f"Shuffled queue")
         await ctx.send(embed=embed)
-    
 
-    @commands.command()
+
+    @commands.command(alises=config.music['playlist'])
     async def playlist(self, ctx, *, code=None):
-        """Convert the current queue into a playlist code. If a playlist code is given, play that playlist"""
+        """Convert the current queue into a playlist code. If a code is provided, play the corresponding playlist."""
         if code is None:
             # If the queue is empty, do nothing
             if len(self.queue) == 0:
@@ -203,15 +202,17 @@ class Music(commands.Cog):
                 code += f"{song['id']}"
 
             # Send the playlist code
-            await ctx.send(f"Playlist code:\n```{code}```")
+            await ctx.send(f"Playlist code:\n```yaml\n{code}<>```")
         else:
             # If the playlist code is invalid, do nothing
-            if code == "":
+            if len(code) % 11 != 2:
+                embed = discord.Embed(description="Invalid playlist code", color=discord.Color.red())
+                await ctx.send(embed=embed)
                 return
-            
+
             playlist = ""
-            for i in range(0, len(code), 11):
-                playlist += f"{code[i:i+11]}!, "
+            for i in range(0, len(code)-2, 11):
+                playlist += f"https://www.youtube.com/watch?v={code[i:i+11]}, "
 
             # If the playlist code is valid, clear the queue and play the playlist
             self.queue.clear()
@@ -230,7 +231,7 @@ class Music(commands.Cog):
         except ValueError:
             query = f"{position} {query}"
             position = -1
-        
+
         # If the index is larger than the queue, set it to the last index
         if int(position) > len(self.queue):
             position = -1
@@ -257,7 +258,7 @@ class Music(commands.Cog):
         query = query.strip()
 
         # Create and send an embed to confirm the author's input
-        embed = discord.Embed(description=f"Adding `{query}` to queue...")
+        embed = discord.Embed(description=f"Adding `{query.replace('https://www.youtube.com/watch?v=', '')}` to queue...")
         waiting_message = await ctx.send(embed=embed)
 
         # parameters for YoutubeDL
@@ -281,15 +282,15 @@ class Music(commands.Cog):
                 info = youtube.sanitize_info(info)
                 # Collect only relevant info
                 item = {
-                    'url':          info['url'], 
-                    'title':        info['title'], 
-                    'duration':     info['duration'], 
-                    'uploader':     info['uploader'],
-                    'id':           info['id'],
-                    'requester':    ctx.author,
+                    'url':          info['url'],        # Video url
+                    'title':        info['title'],      # Video title
+                    'duration':     info['duration'],   # Video duration in seconds
+                    'uploader':     info['uploader'],   # Video uploader
+                    'id':           info['id'],         # Video id
+                    'requester':    ctx.author,         # Video requester
             }
         except IndexError:
-                # If no videos found, send an error message and return
+                # If no videos found, inform the requester
                 embed = discord.Embed(description=f"No videos found with `{query}`")
                 await ctx.send(embed=embed)
                 await waiting_message.delete()
@@ -306,7 +307,8 @@ class Music(commands.Cog):
             queue_pos = position + 1
         embed = discord.Embed(description=f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
         await waiting_message.delete()
-        await ctx.send(embed=embed)
+        if queue_pos != 0:
+            await ctx.send(embed=embed)
 
         # Add song to the queue
         self.queue.insert(position, item)
@@ -324,7 +326,7 @@ class Music(commands.Cog):
         'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
         'options': '-vn',
         }
-        
+
         # Delete the previous message containing the currently playing song if it exists
         if self.now_playing is not None:
             try:
@@ -335,6 +337,7 @@ class Music(commands.Cog):
         # If the queue is empty, send the relevant response
         if not self.queue:
             embed = discord.Embed(description="The queue is now empty")
+            await self.bot.change_presence(activity=None)
             await ctx.send(embed=embed)
             return
 
@@ -361,9 +364,14 @@ class Music(commands.Cog):
             )
             embed.set_footer(text=f"Requested by {requester}")
             self.now_playing = await ctx.send(embed=embed)
-
         # if skip is True then this will cause an UnboundLocalError and will be caught
         try:
+            # Set the bot's status to the current song
+            await self.bot.change_presence(activity=discord.Activity(name=title, 
+                                                                     type=discord.ActivityType.playing,
+                                                                     state="",
+                                                                     url=f"https://www.youtube.com/watch?v={current_song['id']}",))
+                                                                    
             # Start playing the song using FFmpeg and set the after callback to call this function and play the next song
             voice_client.play(discord.FFmpegPCMAudio(url, **ffmpeg_options), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
         except UnboundLocalError:

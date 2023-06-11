@@ -149,7 +149,7 @@ class Ciphers(commands.Cog):
 
     # Encodes messages to and from base64 using subcommands
     @commands.group(aliases=["base64"])
-    async def base(self, ctx, mode, message):
+    async def base(self, ctx):
         """Performs encoding or decoding of messages using base64."""
         if ctx.invoked_subcommand is None:
             print("base: no parameters")
