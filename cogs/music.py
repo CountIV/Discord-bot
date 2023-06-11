@@ -109,6 +109,9 @@ class Music(commands.Cog):
             duration = song['duration']
             minutes, seconds = divmod(duration, 60)
             items += f"`{i+1}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
+            if len(items) > 1800:
+                items += f".\n.\n.\n`{len(self.queue+1)}.`"
+                break
 
         # Create an embed message with the queue information
         embed = discord.Embed(
@@ -260,8 +263,7 @@ class Music(commands.Cog):
         query = query.strip()
 
         # Create and send an embed to confirm the author's input
-        embed = discord.Embed(description=f"Adding `{query.replace('https://www.youtube.com/watch?v=', '')}` to queue...")
-        waiting_message = await ctx.send(embed=embed)
+        waiting_message = await ctx.send(f"Adding `{query.replace('https://www.youtube.com/watch?v=', '')}` to queue...")
 
         # parameters for YoutubeDL
         parameters = {
@@ -307,10 +309,10 @@ class Music(commands.Cog):
             queue_pos = len(self.queue) + 1 if self.current is not None else len(self.queue)
         else:
             queue_pos = position + 1
-        embed = discord.Embed(description=f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
+        # embed = discord.Embed(description=f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
         await waiting_message.delete()
         if queue_pos != 0:
-            await ctx.send(embed=embed)
+            await ctx.send(f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
 
         # Add song to the queue
         self.queue.insert(position, item)
