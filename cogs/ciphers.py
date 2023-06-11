@@ -60,8 +60,7 @@ class Ciphers(commands.Cog):
             else:
                 braille_message += char
         
-        embed = discord.Embed(description=f"{braille_message}")
-        await ctx.send(embed=embed)
+        await ctx.send(f"```{braille_message}```")
 
 
     @commands.command()
@@ -123,8 +122,7 @@ class Ciphers(commands.Cog):
                 else:
                     converted += char
 
-        embed = discord.Embed(description=f"{converted}")
-        await ctx.send(embed=embed)
+        await ctx.send(f"```{converted}```")
 
 
     @commands.command()

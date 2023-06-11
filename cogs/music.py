@@ -224,8 +224,7 @@ class Music(commands.Cog):
             for i in range(0, len(code)-2, 11):
                 playlist += f"https://www.youtube.com/watch?v={code[i:i+11]}, "
 
-            # If the playlist code is valid, clear the queue and play the playlist
-            self.queue.clear()
+            # If the playlist code is valid, add the songs to the queue
             await self.play(ctx, position="-1", query=playlist)
 
 
@@ -321,10 +320,13 @@ class Music(commands.Cog):
             await ctx.send(f"`{queue_pos:2d}.` `[{duration}]` **{item['title']}**")
 
         # Add song to the queue
-        self.queue.insert(position, item)
+        if position == -1:
+            self.queue.append(item)
+        else:
+            self.queue.insert(position, item)
 
         # Play the song if none are currently playing
-        if not voice_client.is_playing():
+        if not voice_client.is_playing() and self.current is None:
             await self.play_song(ctx)
 
 

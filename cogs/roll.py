@@ -52,7 +52,7 @@ class Roll(commands.Cog):
             return
         
         # Convert to string with formatted leading zeroes and join with an empty space
-        individual_rolls = " ".join([str(f"%0{len(str(dice_size))}d" % i) for i in calculated_rolls])
+        individual_rolls = " ".join([f"{i:0{len(str(dice_size))}d}" for i in calculated_rolls])
         # Change format depending on dice count
         if dice_count == 1:
             embed = discord.Embed(title=f"{total}")
