@@ -98,7 +98,7 @@ class Music(commands.Cog):
             embed = discord.Embed(description="The queue is empty")
             # If the queue is empty but there is a song playing then display that
             if self.current is not None:
-                embed.set_footer(text=f"Currently playing:\n{self.current['title']}")
+                embed.set_footer(text=f"Currently playing:\n{self.current['title']}", icon_url=ctx.author.display_avatar.url)
             await ctx.send(embed=embed)
             return
 
@@ -108,20 +108,25 @@ class Music(commands.Cog):
             title = song['title']
             duration = song['duration']
             minutes, seconds = divmod(duration, 60)
-            items += f"`{i+1}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
+            items += f"`{(i+1):2d}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
+
+            # If the queue is too long, only display the first 1800 characters
             if len(items) > 1800:
-                items += f".\n.\n.\n`{len(self.queue+1)}.`"
+                title = self.queue[-1]['title']
+                duration = self.queue[-1]['duration']
+                minutes, seconds = divmod(duration, 60)
+                items += f".\n.\n.\n`{len(self.queue)}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
                 break
 
         # Create an embed message with the queue information
         embed = discord.Embed(
             title=f"Queue [{len(self.queue)}]",
-            description=f"{items}"
+            description=f"{items}",
         )
 
         # Set a footer for any currently playing song if one exists
         if self.current is not None:
-            embed.set_footer(text=f"Currently playing:\n{self.current['title']}", icon_url=ctx.author.avatar_url)
+            embed.set_footer(text=f"Currently playing:\n{self.current['title']}", icon_url=ctx.author.display_avatar.url)
 
         await ctx.send(embed=embed)
 
@@ -291,6 +296,7 @@ class Music(commands.Cog):
                     'duration':     info['duration'],   # Video duration in seconds
                     'uploader':     info['uploader'],   # Video uploader
                     'id':           info['id'],         # Video id
+                    'thumbnail':    info['thumbnail'],  # Video thumbnail
                     'requester':    ctx.author,         # Video requester
             }
         except IndexError:
@@ -312,7 +318,7 @@ class Music(commands.Cog):
         # embed = discord.Embed(description=f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
         await waiting_message.delete()
         if queue_pos != 0:
-            await ctx.send(f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
+            await ctx.send(f"`{queue_pos:2d}.` `[{duration}]` **{item['title']}**")
 
         # Add song to the queue
         self.queue.insert(position, item)
@@ -353,7 +359,7 @@ class Music(commands.Cog):
             current_song = self.queue.pop(0)
 
             # If looping is enabled, add the current song back to the queue
-            if self.loop:
+            if self.loop is True:
                 self.queue.append(current_song)
 
             self.current = current_song
@@ -361,6 +367,7 @@ class Music(commands.Cog):
             title     = current_song['title']
             uploader  = current_song['uploader']
             requester = current_song['requester']
+            thumbnail = current_song['thumbnail']
 
             # Create an embed message to display the current song being played
             embed = discord.Embed(
@@ -368,7 +375,8 @@ class Music(commands.Cog):
                 description=f"**{uploader}**",
                 color = 16711680
             )
-            embed.set_footer(text=f"Requested by {requester}")
+            embed.set_thumbnail(url=thumbnail)
+            embed.set_footer(text=f"Requested by {requester}", icon_url=ctx.author.display_avatar.url)
             self.now_playing = await ctx.send(embed=embed)
         # if skip is True then this will cause an UnboundLocalError and will be caught
         try:
