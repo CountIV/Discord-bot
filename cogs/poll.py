@@ -11,7 +11,7 @@ class Poll(commands.Cog):
 
     @commands.command()
     async def poll(self, ctx, *, entries="2"):
-        """Creates a poll with the given comma separated entries. Optionally, you can specify the number of entries to create."""
+        """Creates a poll with the given comma separated entries. Optionally, specify the number of entries to create."""
 
         # Split the entries into a list
         if entries.isnumeric():

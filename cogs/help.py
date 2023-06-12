@@ -1,3 +1,4 @@
+import re
 import discord
 from discord.ext import commands
 from utils.config import prefix
@@ -20,8 +21,14 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
                     # Format the arguments
                     text_signature = ""
                     for s in signature:
-                        for i in [("=None", ""), ("=False", ""), ("=True", ""), ("[", "<"), ("]", ">"), ("=-1", ""), ("=1d6", "")]:
+                        # Remove the brackets
+                        for i in [("[", "<"), ("]", ">")]:
                             s = s.replace(i[0], i[1])
+
+                        # Remove the default values
+                        pattern = re.escape("=") + "(.*?)" + re.escape(">")
+                        s = re.sub(pattern, ">", s)
+
                         text_signature += " "+s
                     text_signature = text_signature.strip()
                     text_signature = text_signature.replace("  ", " ")

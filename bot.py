@@ -76,9 +76,9 @@ async def load(ctx, target_cog=None):
     # Add elapsed time to footer
     elapsed_time = time.time() - start_time
     elapsed_time_formatted = f"{elapsed_time:.2f}s"
-    embed.set_footer(text=f"Boot time: {elapsed_time_formatted}")
+    embed.set_footer(text=f"Load time: {elapsed_time_formatted}")
 
-    print(f"{'―' * 32}\nRestarted {target} in {elapsed_time_formatted}")
+    print(f"{'―' * 32}\n{target} in {elapsed_time_formatted}")
 
     await waiting.edit(embed=embed)
 
@@ -127,18 +127,9 @@ async def unload(ctx, target_cog=None):
     # Add elapsed time to footer
     elapsed_time = time.time() - start_time
     elapsed_time_formatted = f"{elapsed_time:.2f}s"
-    embed.set_footer(text=f"Boot time: {elapsed_time_formatted}")
+    embed.set_footer(text=f"Unload time: {elapsed_time_formatted}")
 
-    print(f"{'―' * 32}\nRestarted {target} in {elapsed_time_formatted}")
-
-    await waiting.edit(embed=embed)
-
-    # Add elapsed time to footer
-    elapsed_time = time.time() - start_time
-    elapsed_time_formatted = f"{elapsed_time:.2f}s"
-    embed.set_footer(text=f"Load time: {elapsed_time_formatted}")
-
-    print(f"{'―' * 32}\nLoaded {target} in {elapsed_time_formatted}")
+    print(f"{'―' * 32}\n{target} in {elapsed_time_formatted}")
 
     await waiting.edit(embed=embed)
 
@@ -188,9 +179,9 @@ async def restart(ctx, target_cog=None):
     # Add elapsed time to footer
     elapsed_time = time.time() - start_time
     elapsed_time_formatted = f"{elapsed_time:.2f}s"
-    embed.set_footer(text=f"Boot time: {elapsed_time_formatted}")
+    embed.set_footer(text=f"Reboot time: {elapsed_time_formatted}")
 
-    print(f"{'―' * 32}\nRestarted {target} in {elapsed_time_formatted}")
+    print(f"{'―' * 32}\nRebooted {target} in {elapsed_time_formatted}")
 
     await waiting.edit(embed=embed)
 
