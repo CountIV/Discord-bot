@@ -45,6 +45,10 @@ async def restart(ctx, target_cog=None):
     # Start timer
     start_time = time.time()
 
+    # Stops any playing audio
+    if ctx.voice_client and ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
+    
     # Send message to indicate that the bot is restarting
     embed = discord.Embed(title=f"Restarting...", color=discord.Color.red())
     waiting = await ctx.send(embed=embed)

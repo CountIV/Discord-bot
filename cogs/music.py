@@ -11,7 +11,7 @@ class Music(commands.Cog):
         self.bot = bot
         self.queue = []
         self.loop = False
-        self.current = None
+        self.current_item = None
         self.now_playing = None
         self.disconnect_timers = {}
 
@@ -22,15 +22,12 @@ class Music(commands.Cog):
         # Get the voice channel of the author
         channel = ctx.author.voice.channel
 
-        # Get the voice client of the bot in the guild
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
-
         # Check if the bot is already connected to a voice channel 
         # and either move or connect to the author's voice channel
-        if voice_client and voice_client.is_connected():
-            await voice_client.move_to(channel)
+        if ctx.voice_client and ctx.voice_client.is_connected():
+            await ctx.voice_client.move_to(channel)
         else:
-            voice_client = await channel.connect()
+            await channel.connect()
 
 
     @commands.command(aliases=config.music['leave'])
@@ -48,15 +45,14 @@ class Music(commands.Cog):
     @commands.command(aliases=config.music['clear'])
     async def clear(self, ctx):
         """Stops the current song playback and clears the queue."""
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
 
         # If the voice client is connected and playing, stop the playback
-        if voice_client and voice_client.is_playing():
-            voice_client.stop()
+        if ctx.voice_client and ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
 
         # Clear the queue and set the current song to None
         self.queue.clear()
-        self.current = None
+        self.current_item = None
 
         await self.bot.change_presence(activity=None)
         # Delete the previous message containing the currently playing song if it exists
@@ -70,23 +66,22 @@ class Music(commands.Cog):
     @commands.command(aliases=config.music['skip'])
     async def skip(self, ctx):
         """Skips the current song and plays the next one in the queue."""
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
         
         # If there is a song currently playng, send an embed informing of the skip
-        if self.current is not None:
-            embed = discord.Embed(description=f"Skipping: **{self.current['title']}**")
+        if self.current_item is not None:
+            embed = discord.Embed(description=f"Skipping: **{self.current_item['title']}**")
             await ctx.send(embed=embed)
 
         # Stop the current client
-        if voice_client is not None:
-            voice_client.stop()
+        if ctx.voice_client is not None:
+            ctx.voice_client.stop()
 
         # If the queue is not empty, call the play_song() function
         if len(self.queue):
             await self.play_song(ctx, skip=True)
         else:
             await self.bot.change_presence(activity=None)
-            self.current = None
+            self.current_item = None
 
 
     @commands.command(aliases=config.music['queue'])
@@ -97,8 +92,8 @@ class Music(commands.Cog):
         if len(self.queue) == 0:
             embed = discord.Embed(description="The queue is empty")
             # If the queue is empty but there is a song playing then display that
-            if self.current is not None:
-                embed.set_footer(text=f"Currently playing:\n{self.current['title']}", icon_url=ctx.author.display_avatar.url)
+            if self.current_item is not None:
+                embed.set_footer(text=f"Currently playing:\n{self.current_item['title']}", icon_url=ctx.author.display_avatar.url)
             await ctx.send(embed=embed)
             return
 
@@ -115,18 +110,16 @@ class Music(commands.Cog):
                 title = self.queue[-1]['title']
                 duration = self.queue[-1]['duration']
                 minutes, seconds = divmod(duration, 60)
-                items += f".\n.\n.\n`{len(self.queue)}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
+                items += f"•\n•\n•\n`{len(self.queue)}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
                 break
 
         # Create an embed message with the queue information
-        embed = discord.Embed(
-            title=f"Queue [{len(self.queue)}]",
-            description=f"{items}",
-        )
+        embed = discord.Embed(title=f"Queue [{len(self.queue)}]",
+                              description=f"{items}",)
 
         # Set a footer for any currently playing song if one exists
-        if self.current is not None:
-            embed.set_footer(text=f"Currently playing:\n{self.current['title']}", icon_url=ctx.author.display_avatar.url)
+        if self.current_item is not None:
+            embed.set_footer(text=f"Currently playing:\n{self.current_item['title']}", icon_url=ctx.author.display_avatar.url)
 
         await ctx.send(embed=embed)
 
@@ -149,8 +142,6 @@ class Music(commands.Cog):
             await ctx.send(embed=embed)
         except IndexError:
             return
-            # embed = discord.Embed(description=f"Given index `{index}` not in queue")
-            # await ctx.send(embed=embed)
 
 
     @commands.command(aliases=config.music['loop'])
@@ -207,7 +198,7 @@ class Music(commands.Cog):
                 return
 
             # Create a playlist code from the queue
-            code = f"{self.current['id']}"
+            code = f"{self.current_item['id']}"
             for song in self.queue:
                 code += f"{song['id']}"
 
@@ -225,62 +216,85 @@ class Music(commands.Cog):
                 playlist += f"https://www.youtube.com/watch?v={code[i:i+11]}, "
 
             # If the playlist code is valid, add the songs to the queue
-            await self.play(ctx, position="-1", query=playlist)
+            await self.play(ctx, index="-1", song=playlist)
 
 
     @commands.command(aliases=config.music['play'])
-    async def play(self, ctx, position="-1", *, query=None):
+    async def play(self, ctx, index="-1", *, song=None):
         """Plays a requested song. Optionally, specify an index to add the song to the queue at a specific position."""
-        # If the index is not an integer, assume that the query is the index and the index is -1
-        try:
-            if position == "-1":
-                position = int(position)
-            else:
-                position = int(position) - 1
-        except ValueError:
-            query = f"{position} {query}"
-            position = -1
-
-        # If the index is larger than the queue, set it to the last index
-        if int(position) > len(self.queue):
-            position = -1
-
-        # Do nothing if query is empty
-        if query == None or query == "" or query.isspace():
-            return
-
-        # If song entries are separated by a comma, search and play for all
-        if "," in query:
-            queries = query.split(",")
-            for i in queries:
-                await self.play(ctx, query=i)
-            return
-
         # Connect to the author's channel
         await ctx.invoke(self.join)
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
+        
+        # If the index is not an integer, assume that the query is the index and the index is -1
+        try:
+            index = int(index) if index == "-1" else int(index) - 1
+        except ValueError:
+            song = f"{index} {song.strip()}"
+            index = -1
 
-        # If a song from a playlist is given, ignore the playlist
-        if "&list=" in query:
-            query = query.split("&list=")[0]
+        # If the index is larger than the queue, set it to the last index
+        if int(index) > len(self.queue):
+            index = -1
 
-        query = query.strip()
+        # Do nothing if query is empty
+        if song == None or song == "" or song.isspace():
+            return
+        
+        # If song entries are separated by a comma, search and play for all
+        if "," in song:
+            queries = song.split(",")
+            for i in queries:
+                await self.play(ctx, song=i)
+            return
+        
+        # If a is provided with an attached playlist, ignore the playlist
+        if "&list=" in song:
+            song = song.split("&list=")[0]
 
-        # Create and send an embed to confirm the author's input
-        waiting_message = await ctx.send(f"Adding `{query.replace('https://www.youtube.com/watch?v=', '')}` to queue...")
+        # Send a message saying that the song is being added to the queue
+        temp_msg = await ctx.send(f"Adding `{song.replace('https://www.youtube.com/watch?v=', '')}` to queue...")
+        item = await self.get_item(ctx, song)
+        if item is None:
+            await temp_msg.delete()
+            embed = discord.Embed(description=f"No videos found with `{song}`")
+            await ctx.send(embed=embed)
+            return
+        
+        # Get song duration and format it to mm:ss
+        m, s = divmod(item['duration'], 60)
+        duration = f"{m:02d}:{s:02d}"
+    
+        # Display serached song info
+        if index == -1:
+            i = len(self.queue) + 1 if self.current_item is not None else len(self.queue)
+        else:
+            i = index + 1
+
+        await temp_msg.delete()
+
+        if i != 0:
+            await ctx.send(f"`{i:2d}.` `[{duration}]` **{item['title']}**")
+        
+
+        # Add song to the queue
+        self.queue.append(item) if index == -1 else self.queue.insert(index, item)
+
+        # Play the song if none are currently playing
+        if not ctx.voice_client.is_playing() and self.current_item is None:
+            await self.play_song(ctx)
+
+
+    async def get_item(self, ctx, query):
+        """Returns a dictionary containing the requested song's info."""
 
         # parameters for YoutubeDL
-        parameters = {
-            'noplaylist':           True,
-            'default_search':       'ytsearch',
-            'format':               'bestaudio/best',
-            'postprocessors': [{
-                'key':              'FFmpegExtractAudio',
-                'preferredcodec':   'mp3',
-                'preferredquality': '192',
-            }],
-            'youtube_include_dash_manifest': False
-        }
+        parameters = {'noplaylist':           True,
+                      'default_search':       'ytsearch',
+                      'format':               'bestaudio/best',
+                      'postprocessors':       [{'key':              'FFmpegExtractAudio',    
+                                                'preferredcodec':   'mp3',    
+                                                'preferredquality': '192',}],
+                      'youtube_include_dash_manifest': False}
 
         # Get requested song url and title
         try:
@@ -299,55 +313,18 @@ class Music(commands.Cog):
                     'requester':    ctx.author,         # Video requester
             }
         except IndexError:
-                # If no videos found, inform the requester
-                embed = discord.Embed(description=f"No videos found with `{query}`")
-                await ctx.send(embed=embed)
-                await waiting_message.delete()
-                return
-
-        # Get song duration and format it to mm:ss
-        minutes, seconds = divmod(item['duration'], 60)
-        duration = f"{minutes:02d}:{seconds:02d}"
-
-        # Display serached song info
-        if position == -1:
-            queue_pos = len(self.queue) + 1 if self.current is not None else len(self.queue)
-        else:
-            queue_pos = position + 1
-        # embed = discord.Embed(description=f"`{queue_pos}.` `[{duration}]` **{item['title']}**")
-        await waiting_message.delete()
-        if queue_pos != 0:
-            await ctx.send(f"`{queue_pos:2d}.` `[{duration}]` **{item['title']}**")
-
-        # Add song to the queue
-        if position == -1:
-            self.queue.append(item)
-        else:
-            self.queue.insert(position, item)
-
-        # Play the song if none are currently playing
-        if not voice_client.is_playing() and self.current is None:
-            await self.play_song(ctx)
+                return None
+        return item
 
 
     async def play_song(self, ctx, skip=False):
-        voice_client = get(self.bot.voice_clients, guild=ctx.guild)
-
-        # Options to reconnect rather than terminate song if disconnected by corrupt packets
-        ffmpeg_options = {
-        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-        'options': '-vn',
-        }
-
         # Delete the previous message containing the currently playing song if it exists
         if self.now_playing is not None:
-            try:
-                await self.now_playing.delete()
-            except:
-                pass
+            try:    await self.now_playing.delete()
+            except: pass
         else:
             await self.bot.change_presence(activity=None)
-        
+
         # If the queue is empty, send the relevant response
         if not self.queue:
             embed = discord.Embed(description="The queue is now empty")
@@ -358,40 +335,42 @@ class Music(commands.Cog):
         if not skip:
             # Retrieve the information of the current song from the queue
             # and ignore if skipping the song
-            current_song = self.queue.pop(0)
+            song = self.queue.pop(0)
 
             # If looping is enabled, add the current song back to the queue
             if self.loop is True:
-                self.queue.append(current_song)
+                self.queue.append(song)
 
-            self.current = current_song
-            url       = current_song['url']
-            title     = current_song['title']
-            uploader  = current_song['uploader']
-            requester = current_song['requester']
-            thumbnail = current_song['thumbnail']
+            self.current_item = song
+            url       = song['url']
+            title     = song['title']
+            uploader  = song['uploader']
+            requester = song['requester']
+            thumbnail = song['thumbnail']
 
             # Create an embed message to display the current song being played
-            embed = discord.Embed(
-                title=f"Now playing: **{title}**",
-                description=f"**{uploader}**",
-                color = 16711680
-            )
+            embed = discord.Embed(title=f"Now playing: **{title}**",
+                                  description=f"**{uploader}**",
+                                  color = 16711680)
+            embed.set_footer(text=f"Requested by {requester}", 
+                             icon_url=ctx.author.display_avatar.url)
             embed.set_thumbnail(url=thumbnail)
-            embed.set_footer(text=f"Requested by {requester}", icon_url=ctx.author.display_avatar.url)
             self.now_playing = await ctx.send(embed=embed)
-        # if skip is True then this will cause an UnboundLocalError and will be caught
+
+        # Options to reconnect rather than terminate song if disconnected by corrupt packets
+        ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+                          'options': '-vn',}
+
         try:
             # Set the bot's status to the current song
             await self.bot.change_presence(activity=discord.Activity(name=title, 
                                                                      type=discord.ActivityType.playing,
                                                                      state="",
-                                                                     url=f"https://www.youtube.com/watch?v={current_song['id']}",))
-                                                                    
+                                                                     url=f"https://www.youtube.com/watch?v={song['id']}",))
+
             # Start playing the song using FFmpeg and set the after callback to call this function and play the next song
-            voice_client.play(discord.FFmpegPCMAudio(url, **ffmpeg_options), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
+            ctx.voice_client.play(discord.FFmpegPCMAudio(url, **ffmpeg_options), after=lambda e: self.bot.loop.create_task(self.play_song(ctx)))
         except UnboundLocalError:
-            # print("skip was invoked")
             pass
 
 
