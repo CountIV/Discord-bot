@@ -18,7 +18,7 @@ def get_legal_moves(fen, square):
 
 # Get the position of valid pieces that can make legal moves in a given FEN position.
 def get_valid_pieces(fen):
-    # Chess board object 
+    # Chess board object
     board = chess.Board(fen)
     valid_pieces = []
 

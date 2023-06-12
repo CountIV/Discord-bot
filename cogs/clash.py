@@ -43,7 +43,7 @@ class Clash(commands.Cog):
         clash_end_time = datetime.fromtimestamp(min_end_time / 1000)
         current_time = datetime.now()
         time_until_clash_start = clash_start_time - current_time
-        
+
         # Respond with appropriate message depending on the current time
         bot_response = None
         if clash_end_time < current_time:

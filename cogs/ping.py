@@ -14,7 +14,7 @@ class Ping(commands.Cog):
         if user == None:
             await ctx.send(f"Ping is {round(self.bot.latency * 1000)}ms")
             return
-        
+
         """Alternative: Ping someone"""
         await ctx.send(user.mention)
 

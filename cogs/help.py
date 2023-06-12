@@ -8,7 +8,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
     # Help command without any arguments
     async def send_bot_help(self, mapping):
         help_text = "Commands:\n"
-        
+
         # Iterate over each cog in the mapping
         for cog in mapping:
             if cog is not None:
@@ -35,7 +35,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
                     help_text += f"{cog_help}\n"
 
         # Split the help text into segments and sort them by segment length
-        # Commands from the same cogs will stay grouped as is 
+        # Commands from the same cogs will stay grouped as is
         # but single command cogs will be grouped together
         segments = help_text.split("<>")
         segments.sort(key=len)
@@ -47,7 +47,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         # Format the message
         final_message = []
         message = message.split("\n\n")
-        
+
         # Iterate over the message segments in reverse order
         for i in range(1, len(message))[::-1]:
             # Add the music cog commands to the top
@@ -82,7 +82,7 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
             text_alias = aliases[0]
         else:
             text_alias = f"{f' | {prefix[0]}'.join(aliases)}"
-        
+
         # Get the arguments of the command
         signature = command.signature
         signature = signature.split(" ")

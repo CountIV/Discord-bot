@@ -56,7 +56,7 @@ def generate_board(board_size, white_to_move=True):
         text_width, text_height = draw.textsize(label, font=font)
         draw.text((x - text_width // 2, y + square_size // 3 // 2),
                   label, fill=text_colour, font=font, anchor="mm")
-    
+
     # Trim the bottom and right corners
     trim = 90
     old_width, old_height = image.size
@@ -103,7 +103,7 @@ def get_pieces():
 
         # Add the image to the corresponding dictionary
         pieces[colour][piece] = image
-    
+
     return pieces
 
 

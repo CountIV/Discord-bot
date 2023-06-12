@@ -19,9 +19,14 @@ class Poll(commands.Cog):
         else:
             entries = entries.split(",")
 
+        # Check if the number of entries is valid
+        if len(entries) > 18:
+            await ctx.send("Too many entries.")
+            return
+
         # Create the embed
-        embed = discord.Embed(title="", 
-                              description="", 
+        embed = discord.Embed(title="",
+                              description="",
                               color=discord.Color.blue())
         embed.set_footer(icon_url=ctx.author.display_avatar.url)
 
@@ -41,11 +46,11 @@ class Poll(commands.Cog):
 
         self.poll_host = ctx.author
         self.current_poll = message
-    
+
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        
+
         # Rejection conditions
         if self.current_poll is None:
             return
@@ -60,7 +65,7 @@ class Poll(commands.Cog):
         # Check if the :x: reaction is on the current poll
         if reaction.emoji != chr(0x274C):
             return
-        
+
         # Get all the names in the fields of the poll
         names = [field.name for field in reaction.message.embeds[0].fields]
         names = { name.split("|")[0].strip():name.split("|")[1].strip() for name in names }
@@ -76,12 +81,12 @@ class Poll(commands.Cog):
                 if reaction.count == max([r.count for r in reaction.message.reactions]):
                     count = f"```{reaction.count-1:2d} ✅```"
                 else:
-                    count = f"```{(reaction.count-1):2d} ```" 
-                
+                    count = f"```{(reaction.count-1):2d} ```"
+
                 # Format the results
                 title = names[reaction.emoji] if names[reaction.emoji] != "" else reaction.emoji
                 embed.add_field(name=f"{title}: {count}", value=f"", inline=True)
-        
+
         # Remove all reactions and update the message
         await reaction.message.clear_reactions()
         await reaction.message.edit(embed=embed)

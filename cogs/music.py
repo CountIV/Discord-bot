@@ -21,7 +21,7 @@ class Music(commands.Cog):
         """Joins the voice channel of the user who issued the command."""
 
         # Get the voice channel of the user who issued the command
-        channel = ctx.author.voice.channel 
+        channel = ctx.author.voice.channel
 
         # If the bot is already connected to a voice channel, move it to the new one
         if ctx.voice_client and ctx.voice_client.is_connected():
@@ -66,7 +66,7 @@ class Music(commands.Cog):
     @commands.command(aliases=config.music['skip'])
     async def skip(self, ctx):
         """Skips the current song and plays the next one in the queue."""
-        
+
         # If there is a song currently playng, send an embed informing of the skip
         if self.current_item is not None:
             embed = discord.Embed(description=f"Skipping: **{self.current_item['title']}**")
@@ -93,10 +93,10 @@ class Music(commands.Cog):
             embed = discord.Embed(description="The queue is empty")
 
             # If there there is a song playing then display that
-            if self.current_item is not None:   
-                embed.set_footer(text    =f"Currently playing:\n{self.current_item['title']}", 
+            if self.current_item is not None:
+                embed.set_footer(text    =f"Currently playing:\n{self.current_item['title']}",
                                  icon_url=ctx.author.display_avatar.url)
-    
+
             await ctx.send(embed=embed)
             return
 
@@ -117,12 +117,13 @@ class Music(commands.Cog):
                 break
 
         # Create an embed message with the queue information
-        embed = discord.Embed(title=f"Queue [{len(self.queue)}]",
+        embed = discord.Embed(title      =f"Queue [{len(self.queue)}]",
                               description=f"{items}",)
 
         # Set a footer for any currently playing song if one exists
         if self.current_item is not None:
-            embed.set_footer(text=f"Currently playing:\n{self.current_item['title']}", icon_url=ctx.author.display_avatar.url)
+            embed.set_footer(text    =f"Currently playing:\n{self.current_item['title']}",
+                             icon_url=ctx.author.display_avatar.url)
 
         await ctx.send(embed=embed)
 
@@ -142,7 +143,7 @@ class Music(commands.Cog):
                 removed = self.queue.pop(index-1)
             else:
                 removed = self.queue.pop(index)
-            
+
             embed = discord.Embed(description=f"Removed {removed['title']} from queue")
             await ctx.send(embed=embed)
         except IndexError:
@@ -168,13 +169,13 @@ class Music(commands.Cog):
         # If the given indices are the same, do nothing
         if index1 == index2:
             return
-        
+
         # If one of the indices is 0, tell the user that they cannot move the currently playing song
         if index1 == 0 or index2 == 0:
             embed = discord.Embed(description=f"Cannot move currently playing song")
             await ctx.send(embed=embed)
             return
-        
+
         # Move the song from index1 to index2
         try:
             song = self.queue.pop(index1-1)
@@ -218,7 +219,8 @@ class Music(commands.Cog):
         else:
             # If the playlist code is invalid, do nothing
             if len(code) % 11 != 2 and "<>" not in code:
-                embed = discord.Embed(description="Invalid playlist code", color=discord.Color.red())
+                embed = discord.Embed(description="Invalid playlist code",
+                                      color      =discord.Color.red())
                 await ctx.send(embed=embed)
                 return
 
@@ -309,8 +311,8 @@ class Music(commands.Cog):
         parameters = {'noplaylist':           True,
                       'default_search':       'ytsearch',
                       'format':               'bestaudio/best',
-                      'postprocessors':       [{'key':              'FFmpegExtractAudio',    
-                                                'preferredcodec':   'mp3',    
+                      'postprocessors':       [{'key':              'FFmpegExtractAudio',
+                                                'preferredcodec':   'mp3',
                                                 'preferredquality': '192',}],
                       'youtube_include_dash_manifest': False}
 
@@ -367,10 +369,10 @@ class Music(commands.Cog):
                 self.queue.append(song)
 
             # Create an embed message to display the current song being played
-            embed = discord.Embed(title=f"Now playing: **{title}**",
+            embed = discord.Embed(title      =f"Now playing: **{title}**",
                                   description=f"**{uploader}**",
-                                  color = 16711680)
-            embed.set_footer(text=f"Requested by {requester}", 
+                                  color      =16711680)
+            embed.set_footer(text    =f"Requested by {requester}",
                              icon_url=ctx.author.display_avatar.url)
             embed.set_thumbnail(url=thumbnail)
             self.now_playing = await ctx.send(embed=embed)
@@ -381,7 +383,7 @@ class Music(commands.Cog):
 
         try:
             # Set the bot's status to the current song
-            await self.bot.change_presence(activity=discord.Activity(name=title, 
+            await self.bot.change_presence(activity=discord.Activity(name=title,
                                                                      type=discord.ActivityType.playing,
                                                                      state="",
                                                                      url=f"https://www.youtube.com/watch?v={song['id']}",))

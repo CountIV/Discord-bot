@@ -9,7 +9,7 @@ from discord.ext import commands
 class Users(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
 
     @commands.command()
     async def stats(self, ctx, user: discord.User):

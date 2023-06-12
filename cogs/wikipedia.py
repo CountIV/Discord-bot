@@ -14,11 +14,11 @@ class Wikipedia(commands.Cog):
         api = "https://en.wikipedia.org/w/api.php"
 
         # List of words that are usually not capitalized in titles
-        exceptions = ['a', 'an', 'the', 
-                      'and', 'but', 'or', 'nor', 'for', 'so', 'yet', 
+        exceptions = ['a', 'an', 'the',
+                      'and', 'but', 'or', 'nor', 'for', 'so', 'yet',
                       'at', 'by', 'for', 'from', 'in', 'into', 'of', 'off', 'on', 'onto', 'out', 'over', 'to', 'up', 'with'
                       ]
-        
+
         # Reformatting the search query to improve results
         search_query = search_query.split(" ")
         search_query = [s.capitalize() if s not in exceptions else s for s in search_query]

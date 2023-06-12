@@ -10,7 +10,7 @@ class Ciphers(commands.Cog):
     @commands.command()
     async def caesar(self, ctx, *, message):
         """Applies the Caesar cipher to the message."""
-        
+
         ciphered_message = ""
 
         # Iterate through the given message and get the ASCII value
@@ -24,10 +24,10 @@ class Ciphers(commands.Cog):
             # If the letter is not a letter of the alphabet, leave it unchanged
             else:
                 ciphered_letter = letter
-            
+
             # Append the ciphered letter to the ciphered message
             ciphered_message += ciphered_letter
-        
+
         await ctx.send(ciphered_message)
 
 
@@ -37,17 +37,17 @@ class Ciphers(commands.Cog):
 
         # Dict map of letters and numbers to their braille representation
         braille_map = {
-            'A': '⠁',   'B': '⠃',   'C': '⠉', 
-            'D': '⠙',   'E': '⠑',   'F': '⠋', 
-            'G': '⠛',   'H': '⠓',   'I': '⠊', 
-            'J': '⠚',   'K': '⠅',   'L': '⠇', 
-            'M': '⠍',   'N': '⠝',   'O': '⠕', 
-            'P': '⠏',   'Q': '⠟',   'R': '⠗', 
-            'S': '⠎',   'T': '⠞',   'U': '⠥', 
-            'V': '⠧',   'W': '⠺',   'X': '⠭', 
-            'Y': '⠽',   'Z': '⠵',   '0': '⠚', 
-            '1': '⠁',   '2': '⠃',   '3': '⠉', 
-            '4': '⠙',   '5': '⠑',   '6': '⠋', 
+            'A': '⠁',   'B': '⠃',   'C': '⠉',
+            'D': '⠙',   'E': '⠑',   'F': '⠋',
+            'G': '⠛',   'H': '⠓',   'I': '⠊',
+            'J': '⠚',   'K': '⠅',   'L': '⠇',
+            'M': '⠍',   'N': '⠝',   'O': '⠕',
+            'P': '⠏',   'Q': '⠟',   'R': '⠗',
+            'S': '⠎',   'T': '⠞',   'U': '⠥',
+            'V': '⠧',   'W': '⠺',   'X': '⠭',
+            'Y': '⠽',   'Z': '⠵',   '0': '⠚',
+            '1': '⠁',   '2': '⠃',   '3': '⠉',
+            '4': '⠙',   '5': '⠑',   '6': '⠋',
             '7': '⠛',   '8': '⠓',   '9': '⠊',
         }
 
@@ -59,7 +59,7 @@ class Ciphers(commands.Cog):
                 braille_message += braille_map[char]
             else:
                 braille_message += char
-        
+
         await ctx.send(f"```{braille_message}```")
 
 
@@ -67,17 +67,17 @@ class Ciphers(commands.Cog):
     async def morse(self, ctx, *, message):
         """Converts the given message to Morse code and vice versa."""
         morse_map = {
-        'A': '.-',      'B': '-...',    'C': '-.-.', 
-        'D': '-..',     'E': '.',       'F': '..-.', 
-        'G': '--.',     'H': '....',    'I': '..', 
-        'J': '.---',    'K': '-.-',     'L': '.-..', 
-        'M': '--',      'N': '-.',      'O': '---', 
-        'P': '.--.',    'Q': '--.-',    'R': '.-.', 
-        'S': '...',     'T': '-',       'U': '..-', 
-        'V': '...-',    'W': '.--',     'X': '-..-', 
-        'Y': '-.--',    'Z': '--..',    '0': '-----', 
-        '1': '.----',   '2': '..---',   '3': '...--', 
-        '4': '....-',   '5': '.....',   '6': '-....', 
+        'A': '.-',      'B': '-...',    'C': '-.-.',
+        'D': '-..',     'E': '.',       'F': '..-.',
+        'G': '--.',     'H': '....',    'I': '..',
+        'J': '.---',    'K': '-.-',     'L': '.-..',
+        'M': '--',      'N': '-.',      'O': '---',
+        'P': '.--.',    'Q': '--.-',    'R': '.-.',
+        'S': '...',     'T': '-',       'U': '..-',
+        'V': '...-',    'W': '.--',     'X': '-..-',
+        'Y': '-.--',    'Z': '--..',    '0': '-----',
+        '1': '.----',   '2': '..---',   '3': '...--',
+        '4': '....-',   '5': '.....',   '6': '-....',
         '7': '--...',   '8': '---..',   '9': '----.'
         }
 
@@ -96,7 +96,7 @@ class Ciphers(commands.Cog):
                     converted += "/ "
                 else:
                     converted += char
-            
+
             # Retain server specific emojis
             if "<:" in converted and ">" in converted:
                 old = message.split(" ")
@@ -158,7 +158,7 @@ class Ciphers(commands.Cog):
         """ - base64 encode"""
         response = base64.b64encode(message.encode("utf-8")).decode("utf-8")
         await ctx.send(response)
-    
+
 
     @base.command(aliases=["d"])
     async def decode(self, ctx, *, message):
