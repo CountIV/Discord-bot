@@ -38,7 +38,7 @@ def generate_board(board_size, white_to_move=True):
         font = ImageFont.truetype('/usr/share/fonts/dejavu/DejaVuSansMono-Bold.ttf', 32)
     text_colour = (231, 195, 139, 255)
 
-    # Draw coordinate labels on the right and bottom
+    # Draw coordinate labels on the right
     for i in range(board_size):
         x = image_size
         y = (i + 0.58) * square_size
@@ -47,6 +47,7 @@ def generate_board(board_size, white_to_move=True):
         draw.text((x + square_size // 3 // 2, y - text_height // 2),
                   label, fill=text_colour, font=font, anchor="mm")
 
+    # Draw coordinate labels on the bottom
     for i in range(board_size):
         x = (i + 0.58) * square_size
         y = image_size
