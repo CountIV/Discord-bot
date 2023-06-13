@@ -9,7 +9,6 @@ from utils.config import prefix, admin_role
 bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 
 
-
 @bot.event
 async def on_ready():
     # List of cog files within the cogs folder
@@ -28,13 +27,11 @@ async def on_ready():
     print(f'Logged in as {bot.user}')
 
 
-
 @bot.event
 async def on_member_join(member):
     # Gives warm welcome to new members
     channel = member.guild.system_channel
     await channel.send(f"{member.mention} blasts into the server!")
-
 
 
 @bot.command(aliases=["install"], hidden=True)
@@ -68,9 +65,9 @@ async def load(ctx, target_cog=None):
     success = " ".join(success)
 
     # Configure embed to indicate that the cog has been loaded
-    target = f"**{target_cog}** has been loaded" if target_cog is not None else f"Successfully loaded ```{success}```"
+    target = f"**{target_cog}** has been loaded" if target_cog is not None else f"Loaded ```{success}```"
     embed = discord.Embed(title      =f"{target}",
-                          description=f"```{errors}```" if errors else "",
+                          description=f"With errors:```yaml\n{errors}```" if errors else "",
                           color      =discord.Color.green())
 
     # Add elapsed time to footer
@@ -81,7 +78,6 @@ async def load(ctx, target_cog=None):
     print(f"{'―' * 32}\n{target} in {elapsed_time_formatted}")
 
     await waiting.edit(embed=embed)
-
 
 
 @bot.command(aliases=["uninstall"], hidden=True)
@@ -111,6 +107,8 @@ async def unload(ctx, target_cog=None):
     for cog in cog_files:
         extension = f"cogs.{cog[:-3]}"
         try:
+            if cog == "help.py":
+                continue
             await bot.unload_extension(extension)
             success.append(cog)
         except Exception as e:
@@ -119,9 +117,9 @@ async def unload(ctx, target_cog=None):
     success = " ".join(success)
 
     # Configure embed to indicate that the cog has been unloaded
-    target = f"**{target_cog}** has been unloaded" if target_cog is not None else f"Successfully unloaded ```{success}```"
+    target = f"**{target_cog}** has been unloaded" if target_cog is not None else f"Unloaded ```{success}```"
     embed = discord.Embed(title      =f"{target}",
-                          description=f"```{errors}```" if errors else "",
+                          description=f"With errors:```yaml\n{errors}```" if errors else "",
                           color      =discord.Color.green())
 
     # Add elapsed time to footer
@@ -132,7 +130,6 @@ async def unload(ctx, target_cog=None):
     print(f"{'―' * 32}\n{target} in {elapsed_time_formatted}")
 
     await waiting.edit(embed=embed)
-
 
 
 @bot.command(aliases=["reload", "reboot", "re"], hidden=True)
@@ -174,7 +171,7 @@ async def restart(ctx, target_cog=None):
     # Send message to indicate that the bot has been restarted
     target = f"{target_cog}" if target_cog is not None else f"{bot.user.name}"
     embed = discord.Embed(title       = f"**{target}** has been rebooted", color=discord.Color.green(),
-                          description = f"```yaml\n{errors}```" if errors else "")
+                          description = f"With errors:```yaml\n{errors}```" if errors else "")
 
     # Add elapsed time to footer
     elapsed_time = time.time() - start_time
@@ -184,7 +181,6 @@ async def restart(ctx, target_cog=None):
     print(f"{'―' * 32}\nRebooted {target} in {elapsed_time_formatted}")
 
     await waiting.edit(embed=embed)
-
 
 
 if __name__ == "__main__":
