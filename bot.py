@@ -58,7 +58,7 @@ async def load(ctx, target_cog=None):
     # Configure embed to indicate that the cog has been loaded
     target = f"**{target_cog}** has been loaded" if target_cog is not None else f"Loaded ```{success}```"
     embed = discord.Embed(title      =f"{target}",
-                          description=f"With errors:```yaml\n{errors}```" if errors else "",
+                          description=f"With errors:```yaml\n{errors}```" if errors != "" else "",
                           color      =discord.Color.green())
 
     # Add elapsed time to footer
@@ -103,14 +103,17 @@ async def unload(ctx, target_cog=None):
             await bot.unload_extension(extension)
             success.append(cog)
         except Exception as e:
-            errors += f"{e}\n"
+            if "has not been loaded." in f"{e}":
+                pass
+            else:
+                errors += f"{e}\n"
 
     success = " ".join(success)
 
     # Configure embed to indicate that the cog has been unloaded
     target = f"**{target_cog}** has been unloaded" if target_cog is not None else f"Unloaded ```{success}```"
     embed = discord.Embed(title      =f"{target}",
-                          description=f"With errors:```yaml\n{errors}```" if errors else "",
+                          description=f"With errors:```yaml\n{errors}```" if errors != "" else "",
                           color      =discord.Color.green())
 
     # Add elapsed time to footer
@@ -151,9 +154,9 @@ async def restart(ctx, target_cog=None):
         try:
             await bot.reload_extension(extension)
         except Exception as e:
-            try:
-                await bot.load_extension(extension)
-            except Exception as e:
+            if "has not been loaded." in f"{e}":
+                pass
+            else:
                 errors += f"{e}\n"
 
     # Set bot status
@@ -162,7 +165,7 @@ async def restart(ctx, target_cog=None):
     # Send message to indicate that the bot has been restarted
     target = f"{target_cog}" if target_cog is not None else f"{bot.user.name}"
     embed = discord.Embed(title       = f"**{target}** has been rebooted", color=discord.Color.green(),
-                          description = f"With errors:```yaml\n{errors}```" if errors else "")
+                          description = f"With errors:```yaml\n{errors}```" if errors != "" else "")
 
     # Add elapsed time to footer
     elapsed_time = time.time() - start_time
