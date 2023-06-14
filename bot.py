@@ -11,16 +11,7 @@ bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 
 @bot.event
 async def on_ready():
-    # List of cog files within the cogs folder
-    cog_files = [f for f in os.listdir('cogs') if f.endswith('.py')]
-
-    # Load cogs
-    for cog in cog_files:
-        extension = f"cogs.{cog[:-3]}"
-        try:
-            await bot.load_extension(extension)
-        except Exception as e:
-            print(e)
+    await bot.load_extension("cogs.help")
 
     # Set bot status
     await bot.change_presence(activity=None)
