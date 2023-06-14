@@ -348,6 +348,7 @@ class Music(commands.Cog):
         # If the queue is empty, send the relevant response
         if not self.queue:
             embed = discord.Embed(description="The queue is now empty")
+            self.current_item = None
             await self.bot.change_presence(activity=None)
             await ctx.send(embed=embed)
             return
