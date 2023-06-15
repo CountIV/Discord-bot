@@ -7,7 +7,8 @@ class Clash(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(help='- Informs when the next Clash starts')
+
+    @commands.command(help='Provides information on the start time of the next clash event.')
     async def clash(self, ctx):
         # API configuration
         api_key = open(".env/riot_api_key", "r").read()
@@ -42,7 +43,7 @@ class Clash(commands.Cog):
         clash_end_time = datetime.fromtimestamp(min_end_time / 1000)
         current_time = datetime.now()
         time_until_clash_start = clash_start_time - current_time
-        
+
         # Respond with appropriate message depending on the current time
         bot_response = None
         if clash_end_time < current_time:
@@ -57,6 +58,8 @@ class Clash(commands.Cog):
             bot_response = f"Next Clash starts in {days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
 
         await ctx.send(bot_response)
+
+
 
 async def setup(bot):
     await bot.add_cog(Clash(bot))

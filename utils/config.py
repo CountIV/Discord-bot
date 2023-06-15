@@ -1,27 +1,21 @@
-import configparser
+from configparser import ConfigParser
 
-c = configparser.ConfigParser()
-c.read('config/config.ini')
+config = ConfigParser()
+config.read('config/config.ini')
 
 
 # Discord
-prefix = c.get('Discord', 'prefix').split(", ")
-admin_role = c.get('Discord', 'admin_role')
+prefix = config.get('Discord', 'prefix').split(", ")
+admin_role = config.get('Discord', 'admin_role')
 
 
 # Aliases
-music = {
-    'join':     c.get('Aliases', 'music_join').split(", "),
-    'leave':    c.get('Aliases', 'music_leave').split(", "),
-    'play':     c.get('Aliases', 'music_play').split(", "),
-    'clear':    c.get('Aliases', 'music_clear').split(", "),
-    'skip':     c.get('Aliases', 'music_skip').split(", "),
-    'queue':    c.get('Aliases', 'music_queue').split(", "),
-    'remove':   c.get('Aliases', 'music_remove').split(", "),
-}
+music = {}
+for command in ['join', 'leave', 'play', 'clear', 'skip', 'queue', 'remove', 'loop', 'move', 'shuffle', 'playlist']:
+    music[command] = config.get('Aliases', f'music_{command}').split(", ")
 
 
 #Debugging
-debug_channel = c.get('Debug', 'debug_channel').split(", ")
-debug = c.get('Debug', 'log_debug')
+debug_channel = config.get('Debug', 'debug_channel').split(", ")
+debug = config.get('Debug', 'log_debug')
 

@@ -9,13 +9,13 @@ from discord.ext import commands
 class Users(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
 
 
     @commands.command()
     async def stats(self, ctx, user: discord.User):
-        """- Display messaging stats for a user"""
+        """Shows messaging statistics for a user."""
 
+        # Start logging the time used to calculate the user's stats
         start_time = time.time()
 
         embed = discord.Embed(description=f"Calculating user {user}'s message stats...")
@@ -80,7 +80,7 @@ class Users(commands.Cog):
             top_words_str = ", ".join([f"`{word}`" for word, count in top_words])
 
         if top_emojis:
-            top_emojis_str = "\n".join([f"`{count}`x {emoji}" for emoji, count in top_emojis])
+            top_emojis_str = "\n".join([f"`{count:4d}`x {emoji}" for emoji, count in top_emojis])
 
         # Build the embed
         embed = discord.Embed(title="Messaging Stats", color=discord.Color.green())
@@ -95,30 +95,12 @@ class Users(commands.Cog):
         embed.add_field(name="Most Used Words",     value=top_words_str)
         embed.add_field(name="Most Used Emojis",    value=top_emojis_str)
 
-
         elapsed_time = time.time() - start_time
         elapsed_time_formatted = f"{elapsed_time:.2f}s"  # Format the elapsed time to two decimal places
 
         embed.set_footer(text=f"Calculation time: {elapsed_time_formatted}")
 
         await waiting_message.edit(embed=embed)
-
-
-
-def setup(bot):
-    bot.add_cog(Users(bot))
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

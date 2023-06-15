@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 from utils.board_drawer import get_board
-from utils.piece_handler import moveable_pieces, valid_moves
-
 
 
 class Chess(commands.Cog):
@@ -10,13 +8,10 @@ class Chess(commands.Cog):
         self.bot = bot
 
 
-
     @commands.command()
-    async def visualize(self, ctx, fen):
-        """- Draw a board using FEN notation"""
-
+    async def visualize(self, ctx, *, fen):
+        """Draws a board using the FEN (Forsyth-Edwards Notation) representation."""
         chessboard, embed = get_board(fen)
-
         await ctx.send(file=chessboard, embed=embed)
 
 

@@ -11,11 +11,11 @@ class Roll(commands.Cog):
 
     @commands.command()
     async def roll(self, ctx, roll="1d6"):
-        """- Rolls dice of the form [dice count]d[dice size] E.g. \"2d6\" to roll two six-sided dice"""
+        """Rolls dice based on the provided notation (e.g., "2d6" for two six-sided dice)."""
 
         # Search for the roll input with regex
         pattern = re.search("[0-9]+d[0-9]+", roll)
-        
+
         # If the input is invalid, return an error message
         if pattern == None:
             embed = discord.Embed(
@@ -25,7 +25,7 @@ class Roll(commands.Cog):
             embed.set_footer(text="E.g. 2d6 to roll two six-sided dice")
             await ctx.send(embed=embed)
             return
-        
+
         # Isolate the roll input
         roll = pattern.group()
 
@@ -50,9 +50,9 @@ class Roll(commands.Cog):
             embed = discord.Embed(title = f"{randint(1, int(roll[2:]))}")
             await ctx.send(embed=embed)
             return
-        
+
         # Convert to string with formatted leading zeroes and join with an empty space
-        individual_rolls = " ".join([str(f"%0{len(str(dice_size))}d" % i) for i in calculated_rolls])
+        individual_rolls = " ".join([f"{i:0{len(str(dice_size))}d}" for i in calculated_rolls])
         # Change format depending on dice count
         if dice_count == 1:
             embed = discord.Embed(title=f"{total}")
@@ -66,8 +66,9 @@ class Roll(commands.Cog):
                 title = f"Rolling {dice_count}x {dice_size}-sided dice",
                 description = f"```haskell\n{individual_rolls}```\nTotal: **{total}**",
             )
-        
+
         await ctx.send(embed=embed)
+
 
 
 async def setup(bot):

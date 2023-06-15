@@ -10,7 +10,7 @@ class QR(commands.Cog):
 
     @commands.command()
     async def qr(self, ctx, *, link):
-        """- Converts a given link to a QR code."""
+        """Generates a QR code for the given link."""
         # Set API endpoint and parameters
         api = "https://api.qrserver.com/v1/create-qr-code/"
         parameters = {"data":link, "size":"300x300"}
@@ -23,6 +23,7 @@ class QR(commands.Cog):
         embed = discord.Embed()
         embed.set_image(url=qr_code_image_url)
         await ctx.send(embed=embed)
+
 
 
 async def setup(bot):
