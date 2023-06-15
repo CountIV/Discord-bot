@@ -5,8 +5,9 @@ class Weather(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(help='- Informs when the next Clash starts')
+    @commands.command(aliases=["w"])
     async def weather(self, ctx, *, city):
+        """Gives current temperature and weather of given city"""
         # API configuration
         api_key = open(".env/weather_api_key", "r").read()
         base_url = "http://api.openweathermap.org/"
@@ -25,7 +26,6 @@ class Weather(commands.Cog):
         # Get relevant data from requested json
         temp = response2["main"]["temp"]
         weather = response2["weather"][0]["description"]
-        print(f"Temperature is {temp} and weather is {weather}")
 
         await ctx.send(f"Temperature is {temp} and weather is {weather}")
 
