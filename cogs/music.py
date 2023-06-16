@@ -9,10 +9,10 @@ from discord.ext import commands
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.queue = []
-        self.loop = False
-        self.current_item = None
-        self.now_playing = None
+        self.queue = {}
+        self.loop = {}
+        self.current_item = {}
+        self.now_playing = {}
         self.disconnect_timers = {}
 
 
@@ -22,6 +22,16 @@ class Music(commands.Cog):
 
         # Get the voice channel of the user who issued the command
         channel = ctx.author.voice.channel
+
+        # Set up the queue, loop, current item and now playing for the guild
+        if ctx.guild.id not in self.queue:
+            self.queue[ctx.guild.id] = []
+        if ctx.guild.id not in self.loop:
+            self.loop[ctx.guild.id] = False
+        if ctx.guild.id not in self.current_item:
+            self.current_item[ctx.guild.id] = None
+        if ctx.guild.id not in self.now_playing:
+            self.now_playing[ctx.guild.id] = None
 
         # If the bot is already connected to a voice channel, move it to the new one
         if ctx.voice_client and ctx.voice_client.is_connected():
@@ -51,14 +61,14 @@ class Music(commands.Cog):
             ctx.voice_client.stop()
 
         # Clear the queue and set the current song to None
-        self.queue.clear()
-        self.current_item = None
+        self.queue[ctx.guild.id].clear()
+        self.current_item[ctx.guild.id] = None
         await self.bot.change_presence(activity=None)
 
         # Delete the previous message containing the currently playing song if it exists
-        if self.now_playing is not None:
+        if self.now_playing[ctx.guild.id] is not None:
             try:
-                await self.now_playing.delete()
+                await self.now_playing[ctx.guild.id].delete()
             except:
                 pass
 
@@ -68,8 +78,8 @@ class Music(commands.Cog):
         """Skips the current song and plays the next one in the queue."""
 
         # If there is a song currently playng, send an embed informing of the skip
-        if self.current_item is not None:
-            embed = discord.Embed(description=f"Skipping: **{self.current_item['title']}**")
+        if self.current_item[ctx.guild.id] is not None:
+            embed = discord.Embed(description=f"Skipping: **{self.current_item[ctx.guild.id]['title']}**")
             await ctx.send(embed=embed)
 
         # Stop the current client
@@ -77,11 +87,11 @@ class Music(commands.Cog):
             ctx.voice_client.stop()
 
         # If the queue is not empty, call the play_song() function
-        if len(self.queue):
+        if len(self.queue[ctx.guild.id]):
             await self.play_song(ctx, skip=True)
         else:
             await self.bot.change_presence(activity=None)
-            self.current_item = None
+            self.current_item[ctx.guild.id] = None
 
 
     @commands.command(aliases=config.music['queue'])
@@ -89,12 +99,12 @@ class Music(commands.Cog):
         """Displays the currently playing song and the queue."""
 
         # If the queue is empty, send an embed message indicating that
-        if len(self.queue) == 0:
+        if ctx.guild.id in self.queue and len(self.queue[ctx.guild.id]) == 0:
             embed = discord.Embed(description="The queue is empty")
 
             # If there there is a song playing then display that
-            if self.current_item is not None:
-                embed.set_footer(text    =f"Currently playing:\n{self.current_item['title']}",
+            if self.current_item[ctx.guild.id] is not None:
+                embed.set_footer(text    =f"Currently playing:\n{self.current_item[ctx.guild.id]['title']}",
                                  icon_url=ctx.author.display_avatar.url)
 
             await ctx.send(embed=embed)
@@ -102,7 +112,7 @@ class Music(commands.Cog):
 
         # Format the song information for display
         items = ""
-        for i, song in enumerate(self.queue):
+        for i, song in enumerate(self.queue[ctx.guild.id]):
             title = song['title']
             duration = song['duration']
             minutes, seconds = divmod(duration, 60)
@@ -110,19 +120,19 @@ class Music(commands.Cog):
 
             # If the queue is too long, only display as many songs as will fit in a message
             if len(items) > 1800:
-                title = self.queue[-1]['title']
-                duration = self.queue[-1]['duration']
+                title = self.queue[ctx.guild.id][-1]['title']
+                duration = self.queue[ctx.guild.id][-1]['duration']
                 minutes, seconds = divmod(duration, 60)
-                items += f" •\n •\n •\n`{len(self.queue)}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
+                items += f" •\n •\n •\n`{len(self.queue[ctx.guild.id])}.` `[{minutes:02d}:{seconds:02d}]`  {title}\n"
                 break
 
         # Create an embed message with the queue information
-        embed = discord.Embed(title      =f"Queue [{len(self.queue)}]",
+        embed = discord.Embed(title      =f"Queue [{len(self.queue[ctx.guild.id])}]",
                               description=f"{items}",)
 
         # Set a footer for any currently playing song if one exists
-        if self.current_item is not None:
-            embed.set_footer(text    =f"Currently playing:\n{self.current_item['title']}",
+        if self.current_item[ctx.guild.id] is not None:
+            embed.set_footer(text    =f"Currently playing:\n{self.current_item[ctx.guild.id]['title']}",
                              icon_url=ctx.author.display_avatar.url)
 
         await ctx.send(embed=embed)
@@ -132,6 +142,8 @@ class Music(commands.Cog):
     async def remove(self, ctx, index=-1):
         """Removes a song from the queue at the given index. If no index is specified, it removes the last added song."""
         index = int(index)
+        if ctx.guild.id not in self.queue:
+            return
         try:
             # if the given index is 0, remove the currently playing song
             if index == 0:
@@ -140,9 +152,9 @@ class Music(commands.Cog):
 
             # Remove song at given index
             if index > 0:
-                removed = self.queue.pop(index-1)
+                removed = self.queue[ctx.guild.id].pop(index-1)
             else:
-                removed = self.queue.pop(index)
+                removed = self.queue[ctx.guild.id].pop(index)
 
             embed = discord.Embed(description=f"Removed {removed['title']} from queue")
             await ctx.send(embed=embed)
@@ -155,8 +167,11 @@ class Music(commands.Cog):
         """Enables looping of the current queue, excluding the currently playing song."""
 
         # Set the loop variable to the opposite of what it currently is and send an embed message informing of the change
-        self.loop = not self.loop
-        embed = discord.Embed(description=f"Looping is now `{self.loop}`")
+        if ctx.guild.id not in self.loop:
+            self.loop[ctx.guild.id] = True
+        else:
+            self.loop[ctx.guild.id] = not self.loop[ctx.guild.id]
+        embed = discord.Embed(description=f"Looping is now `{self.loop[ctx.guild.id]}`")
         await ctx.send(embed=embed)
 
 
@@ -176,10 +191,13 @@ class Music(commands.Cog):
             await ctx.send(embed=embed)
             return
 
+        if ctx.guild.id not in self.queue:
+            return
+
         # Move the song from index1 to index2
         try:
-            song = self.queue.pop(index1-1)
-            self.queue.insert(index2-1, song)
+            song = self.queue[ctx.guild.id].pop(index1-1)
+            self.queue[ctx.guild.id].insert(index2-1, song)
             embed = discord.Embed(description=f"Moved `{song['title']}` from `{index1}.` to `{index2}.`")
             await ctx.send(embed=embed)
         except IndexError:
@@ -191,8 +209,11 @@ class Music(commands.Cog):
     async def shuffle(self, ctx):
         """Shuffles the queue."""
 
+        if ctx.guild.id not in self.queue:
+            return
+
         # Shuffle the queue and send an embed message informing of the shuffle
-        random.shuffle(self.queue)
+        random.shuffle(self.queue[ctx.guild.id])
         embed = discord.Embed(description=f"Shuffled queue")
         await ctx.send(embed=embed)
 
@@ -201,17 +222,20 @@ class Music(commands.Cog):
     async def playlist(self, ctx, *, code=None):
         """Convert the current queue into a playlist code. If a code is provided, play the corresponding playlist."""
 
+        if ctx.guild.id not in self.queue:
+            return
+
         # If a code is not provided, create a playlist code from the queue
         if code is None:
             # If the queue is empty, do nothing
-            if len(self.queue) == 0:
+            if len(self.queue[ctx.guild.id]) == 0:
                 embed = discord.Embed(description="The queue is empty")
                 await ctx.send(embed=embed)
                 return
 
             # Create a playlist code from the queue
-            code = f"{self.current_item['id']}"
-            for song in self.queue:
+            code = f"{self.current_item[ctx.guild.id]['id']}"
+            for song in self.queue[ctx.guild.id]:
                 code += f"{song['id']}"
 
             # Send the playlist code
@@ -248,7 +272,7 @@ class Music(commands.Cog):
             index = -1
 
         # If the index is larger than the queue, set it to the last index
-        if int(index) > len(self.queue):
+        if int(index) > len(self.queue[ctx.guild.id]):
             index = -1
 
         # Do nothing if query is empty
@@ -286,7 +310,7 @@ class Music(commands.Cog):
 
         # Display serached song info
         if index == -1:
-            i = len(self.queue) + 1 if self.current_item is not None else len(self.queue)
+            i = len(self.queue[ctx.guild.id]) + 1 if self.current_item[ctx.guild.id] is not None else len(self.queue[ctx.guild.id])
         else:
             i = index + 1
 
@@ -297,10 +321,10 @@ class Music(commands.Cog):
             await ctx.send(f"`{i:2d}.` `[{duration}]` **{item['title']}**")
 
         # Add song to the queue
-        self.queue.append(item) if index == -1 else self.queue.insert(index, item)
+        self.queue[ctx.guild.id].append(item) if index == -1 else self.queue[ctx.guild.id].insert(index, item)
 
         # Play the song if none are currently playing
-        if not ctx.voice_client.is_playing() and self.current_item is None:
+        if not ctx.voice_client.is_playing() and self.current_item[ctx.guild.id] is None:
             await self.play_song(ctx)
 
 
@@ -339,15 +363,15 @@ class Music(commands.Cog):
 
     async def play_song(self, ctx, skip=False):
         # Delete the previous message containing the currently playing song if it exists
-        if self.now_playing is not None:
-            try:    await self.now_playing.delete()
+        if self.now_playing[ctx.guild.id] is not None:
+            try:    await self.now_playing[ctx.guild.id].delete()
             except: pass
         else:
             await self.bot.change_presence(activity=None)
 
         # If the queue is empty, send the relevant response
-        if not self.queue:
-            self.current_item = None
+        if not self.queue[ctx.guild.id]:
+            self.current_item[ctx.guild.id] = None
             await self.bot.change_presence(activity=None)
             # embed = discord.Embed(description="The queue is now empty")
             # await ctx.send(embed=embed)
@@ -356,18 +380,18 @@ class Music(commands.Cog):
         if not skip:
             # Retrieve the information of the current song from the queue
             # and ignore if skipping the song
-            song = self.queue.pop(0)
+            song = self.queue[ctx.guild.id].pop(0)
 
             url       = song['url']
             title     = song['title']
             uploader  = song['uploader']
             requester = song['requester']
             thumbnail = song['thumbnail']
-            self.current_item = song
+            self.current_item[ctx.guild.id] = song
 
             # If looping is enabled, add the current song back to the queue
-            if self.loop is True:
-                self.queue.append(song)
+            if self.loop[ctx.guild.id] is True:
+                self.queue[ctx.guild.id].append(song)
 
             # Create an embed message to display the current song being played
             embed = discord.Embed(title      =f"Now playing: **{title}**",
@@ -376,7 +400,7 @@ class Music(commands.Cog):
             embed.set_footer(text    =f"Requested by {requester}",
                              icon_url=ctx.author.display_avatar.url)
             embed.set_thumbnail(url=thumbnail)
-            self.now_playing = await ctx.send(embed=embed)
+            self.now_playing[ctx.guild.id] = await ctx.send(embed=embed)
 
         # Options to reconnect rather than terminate song if disconnected by corrupt packets
         ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',

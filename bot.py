@@ -135,7 +135,7 @@ async def restart(ctx, target_cog=None):
     start_time = time.time()
 
     # Stops any playing audio if the target_cog is music
-    if target_cog == "music" and ctx.voice_client and ctx.voice_client.is_playing():
+    if (target_cog == "music" or target_cog == None) and ctx.voice_client and ctx.voice_client.is_playing():
             await ctx.invoke(bot.get_command("clear"))
 
     # Send message to indicate that the bot is restarting
