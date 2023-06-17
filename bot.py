@@ -13,6 +13,23 @@ bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 async def on_ready():
     await bot.load_extension("cogs.help")
 
+    # List of cog files within the cogs folder
+    cog_files = [f for f in os.listdir('cogs') if f.endswith('.py')]
+
+    # Load cogs
+    errors = ""
+    for cog in cog_files:
+        extension = f"cogs.{cog[:-3]}"
+        try:
+            await bot.load_extension(extension)
+        except Exception as e:
+            errors += f"{e}\n"
+
+    # Send errors to error channel
+    if errors != "":
+        embed = discord.Embed(title=f"Errors while loading cogs", description=f"```yaml\n{errors}```", color=discord.Color.red())
+        await bot.get_channel(1110915765932150885).send(embed=embed)
+
     # Set bot status
     await bot.change_presence(activity=None)
     print(f'Logged in as {bot.user}')
@@ -26,7 +43,7 @@ async def on_member_join(member):
 
 
 @bot.command(aliases=["install"], hidden=True)
-@commands.has_role(admin_role)
+@commands.is_owner()
 async def load(ctx, target_cog=None):
     """Loads a cog."""
 
@@ -72,7 +89,7 @@ async def load(ctx, target_cog=None):
 
 
 @bot.command(aliases=["uninstall"], hidden=True)
-@commands.has_role(admin_role)
+@commands.is_owner()
 async def unload(ctx, target_cog=None):
     """Unloads a cog."""
 
@@ -127,7 +144,7 @@ async def unload(ctx, target_cog=None):
 
 
 @bot.command(aliases=["reload", "reboot", "re"], hidden=True)
-@commands.has_role(admin_role)
+@commands.is_owner()
 async def restart(ctx, target_cog=None):
     """Restarts all cogs."""
 
