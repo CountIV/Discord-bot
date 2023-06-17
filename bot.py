@@ -2,7 +2,7 @@ import time
 import discord
 import os
 from discord.ext import commands
-from utils.config import prefix, admin_role
+from utils.config import prefix, debug_channel
 
 
 # Create bot object
@@ -11,8 +11,6 @@ bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 
 @bot.event
 async def on_ready():
-    await bot.load_extension("cogs.help")
-
     # List of cog files within the cogs folder
     cog_files = [f for f in os.listdir('cogs') if f.endswith('.py')]
 
@@ -28,7 +26,7 @@ async def on_ready():
     # Send errors to error channel
     if errors != "":
         embed = discord.Embed(title=f"Errors while loading cogs", description=f"```yaml\n{errors}```", color=discord.Color.red())
-        await bot.get_channel(1110915765932150885).send(embed=embed)
+        await bot.get_channel(debug_channel).send(embed=embed)
 
     # Set bot status
     await bot.change_presence(activity=None)
@@ -66,14 +64,14 @@ async def load(ctx, target_cog=None):
         extension = f"cogs.{cog[:-3]}"
         try:
             await bot.load_extension(extension)
-            success.append(cog)
+            success.append(cog[:-3])
         except Exception as e:
             errors += f"{e}\n"
 
-    success = " ".join(success)
+    success = ", ".join(success)
 
     # Configure embed to indicate that the cog has been loaded
-    target = f"**{target_cog}** has been loaded" if target_cog is not None else f"Loaded ```{success}```"
+    target = f"**{target_cog}** has been loaded" if target_cog != None else f"Loaded {success}"
     embed = discord.Embed(title      =f"{target}",
                           description=f"With errors:```yaml\n{errors}```" if errors != "" else "",
                           color      =discord.Color.green())

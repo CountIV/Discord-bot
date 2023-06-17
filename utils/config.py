@@ -16,6 +16,6 @@ for command in ['join', 'leave', 'play', 'clear', 'skip', 'queue', 'remove', 'lo
 
 
 #Debugging
-debug_channel = config.get('Debug', 'debug_channel').split(", ")
+debug_channel = config.get('Debug', 'debug_channel')
 debug = config.get('Debug', 'log_debug')
 
