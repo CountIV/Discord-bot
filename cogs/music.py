@@ -103,9 +103,10 @@ class Music(commands.Cog):
             embed = discord.Embed(description="The queue is empty")
 
             # If there there is a song playing then display that
+            requester = self.current_item[ctx.guild.id]['requester']
             if self.current_item[ctx.guild.id] is not None:
                 embed.set_footer(text    =f"Currently playing:\n{self.current_item[ctx.guild.id]['title']}",
-                                 icon_url=ctx.author.display_avatar.url)
+                                 icon_url=requester.display_avatar.url)
 
             await ctx.send(embed=embed)
             return
@@ -164,13 +165,18 @@ class Music(commands.Cog):
 
     @commands.command(aliases=config.music['loop'])
     async def loop(self, ctx):
-        """Enables looping of the current queue, excluding the currently playing song."""
+        """Enables looping of the current queue."""
 
         # Set the loop variable to the opposite of what it currently is and send an embed message informing of the change
         if ctx.guild.id not in self.loop:
             self.loop[ctx.guild.id] = True
         else:
             self.loop[ctx.guild.id] = not self.loop[ctx.guild.id]
+
+        if self.loop[ctx.guild.id] == True:
+            if  self.queue[ctx.guild.id][-1] != self.current_item[ctx.guild.id]:
+                self.queue[ctx.guild.id].append(self.current_item[ctx.guild.id])
+
         embed = discord.Embed(description=f"Looping is now `{self.loop[ctx.guild.id]}`")
         await ctx.send(embed=embed)
 
@@ -398,7 +404,7 @@ class Music(commands.Cog):
                                   description=f"**{uploader}**",
                                   color      =16711680)
             embed.set_footer(text    =f"Requested by {requester}",
-                             icon_url=ctx.author.display_avatar.url)
+                             icon_url=requester.display_avatar.url)
             embed.set_thumbnail(url=thumbnail)
             self.now_playing[ctx.guild.id] = await ctx.send(embed=embed)
 
