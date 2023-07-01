@@ -3,16 +3,16 @@ from discord.ext import commands
 import requests
 from datetime import datetime
 
-class Clash(commands.Cog):
+class Lol(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.api_key = open(".env/riot_api_key", "r").read()
 
-
-    @commands.command(help='Provides information on the start time of the next clash event.')
+    @commands.command()
     async def clash(self, ctx):
+        """Provides information on the start time of the next clash event."""
         # API configuration
-        api_key = open(".env/riot_api_key", "r").read()
-        api_url = "https://euw1.api.riotgames.com/lol/clash/v1/tournaments" + "?api_key=" + api_key
+        api_url = "https://euw1.api.riotgames.com/lol/clash/v1/tournaments" + "?api_key=" + self.api_key
 
         # Response body gets saved in data variable
         response = requests.get(api_url)
@@ -60,6 +60,18 @@ class Clash(commands.Cog):
         await ctx.send(bot_response)
 
 
+    @commands.command()
+    async def online(self, ctx, *, user):
+        """Online"""
+        api_url = "https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/" + user + "?api_key=" + self.api_key
+
+        response = requests.get(api_url).json()
+        date = datetime.fromtimestamp(response["revisionDate"] // 1000).strftime("%Y-%m-%d %H:%M")
+        name = response["name"]
+
+        embed = discord.Embed(title=f"{name} | Last seen", description=date)
+
+        await ctx.send(embed=embed)
 
 async def setup(bot):
-    await bot.add_cog(Clash(bot))
+    await bot.add_cog(Lol(bot))
