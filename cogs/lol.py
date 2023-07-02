@@ -8,6 +8,7 @@ class Lol(commands.Cog):
         self.bot = bot
         self.api_key = open(".env/riot_api_key", "r").read()
 
+
     @commands.command()
     async def clash(self, ctx):
         """Provides information on the start time of the next clash event."""
@@ -61,17 +62,38 @@ class Lol(commands.Cog):
 
 
     @commands.command()
-    async def online(self, ctx, *, user):
-        """Online"""
-        api_url = "https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/" + user + "?api_key=" + self.api_key
+    async def lol(self, ctx, *, username):
+        """Search League player by username"""
+        api_url1 = f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{username}?api_key={self.api_key}"
+        response1 = requests.get(api_url1).json()
 
-        response = requests.get(api_url).json()
-        date = datetime.fromtimestamp(response["revisionDate"] // 1000).strftime("%Y-%m-%d %H:%M")
-        name = response["name"]
+        encryptedSummonerId = response1["id"]
+        api_url2 = f"https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/{encryptedSummonerId}?api_key={self.api_key}"
+        response2 = requests.get(api_url2).json()
 
-        embed = discord.Embed(title=f"{name} | Last seen", description=date)
+        # Checks last activity in League client
+        # Probably updated every time a game in LoL or TFT ends
+        date = datetime.fromtimestamp(response1['revisionDate'] // 1000).strftime("%Y-%m-%d %H:%M")
+        name = response1['name']
+
+        # Build embed with returned data
+        embed = discord.Embed(title=f"{name}", color=discord.Color.blue())
+        if response2 != []:
+            rank = f"{response2[0]['tier']} {response2[0]['rank']}"
+            wins = response2[0]['wins']
+            losses = response2[0]['losses']
+            winrate = round(wins / (wins + losses) * 100, 1)
+
+            embed.add_field(name="Rank", value=rank, inline=False)
+            embed.add_field(name="Wins", value=wins)
+            embed.add_field(name="Losses", value=losses)
+            embed.add_field(name="Winrate", value=f"{winrate}%")
+        else:
+            embed.add_field(name="Rank", value="UNRANKED", inline=False)
+        embed.add_field(name="Last seen", value=date)
 
         await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(Lol(bot))
