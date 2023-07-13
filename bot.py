@@ -32,14 +32,6 @@ async def on_ready():
     await bot.change_presence(activity=None)
     print(f'Logged in as {bot.user}')
 
-
-@bot.event
-async def on_member_join(member):
-    # Gives warm welcome to new members
-    channel = member.guild.system_channel
-    await channel.send(f"{member.mention} blasts into the server!")
-
-
 @bot.command(aliases=["install"], hidden=True)
 @commands.is_owner()
 async def load(ctx, target_cog=None):
