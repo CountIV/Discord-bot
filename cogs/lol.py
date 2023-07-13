@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import requests
 from datetime import datetime
+import json
 
 class Lol(commands.Cog):
     def __init__(self, bot):
@@ -63,7 +64,7 @@ class Lol(commands.Cog):
     async def lol(self, ctx, *, username):
         """Search League player stats by username"""
         view = LeagueProfile(username, self.api_key)
-        embed = view.first_page()
+        embed = view.front_page()
 
         await ctx.send(embed=embed, view=view)
 
@@ -76,30 +77,30 @@ async def setup(bot):
 class LeagueProfile(discord.ui.View):
     def __init__(self, username, api_key):
         super().__init__()
-        self.username = username
-        self.api_key = api_key
 
-    # Creates embed for initial and first page
-    # Returns embed for initial use
-    def first_page(self):
-        api_url1 = f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{self.username}?api_key={self.api_key}"
-        response1 = requests.get(api_url1).json()
+        api_url_summoner = f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{username}?api_key={api_key}"
+        self.summoner_data = requests.get(api_url_summoner).json()
+        self.name = self.summoner_data['name']
+        encryptedSummonerId = self.summoner_data["id"]
 
-        encryptedSummonerId = response1["id"]
-        api_url2 = f"https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/{encryptedSummonerId}?api_key={self.api_key}"
-        response2 = requests.get(api_url2).json()
+        api_url_ranked = f"https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/{encryptedSummonerId}?api_key={api_key}"
+        self.ranked_data = requests.get(api_url_ranked).json()
 
+        api_url_mastery = f"https://euw1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}?api_key={api_key}"
+        self.mastery = requests.get(api_url_mastery).json()
+
+    # Creates embed for initial page, returns Discord embed
+    def front_page(self):
         # Checks last activity in League client
         # Probably updated every time a game in LoL or TFT ends
-        date = datetime.fromtimestamp(response1['revisionDate'] // 1000).strftime("%Y-%m-%d %H:%M")
-        name = response1['name']
+        date = datetime.fromtimestamp(self.summoner_data['revisionDate'] // 1000).strftime("%Y-%m-%d %H:%M")
 
         # Build embed with returned data
-        embed = discord.Embed(title=f"{name}", color=discord.Color.blue())
-        if response2 != []:
-            rank = f"{response2[0]['tier']} {response2[0]['rank']}"
-            wins = response2[0]['wins']
-            losses = response2[0]['losses']
+        embed = discord.Embed(title=f"{self.name}", color=discord.Color.blue())
+        if self.ranked_data != []:
+            rank = f"{self.ranked_data[0]['tier']} {self.ranked_data[0]['rank']}"
+            wins = self.ranked_data[0]['wins']
+            losses = self.ranked_data[0]['losses']
             winrate = round(wins / (wins + losses) * 100, 1)
 
             embed.add_field(name="Rank", value=rank, inline=False)
@@ -112,10 +113,36 @@ class LeagueProfile(discord.ui.View):
 
         return embed
 
-    # Initializes button
-    @discord.ui.button(label="delete", style=discord.ButtonStyle.blurple)
-    async def display(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed = discord.Embed(
-            title= "Deleted",
-        )
+    # Creates embed for initial page, returns Discord embed
+    def mastery_page(self):
+        # champions.json has champion names
+        with open("resources/champions.json", encoding="UTF-8") as file:
+            champion_data = json.load(file)
+
+        # Build Embed
+        embed = discord.Embed(title=f"{self.name}: Mastery", color=discord.Color.blue())
+        for index, champion in enumerate(self.mastery):
+            # Get champion's name from using champion's id
+            champion_name = champion_data[str(champion["championId"])]
+            # Get champion's mastery points
+            champion_mastery_points = champion["championPoints"]
+            embed.add_field(name=f"{index+1}. {champion_name}", value=f"{champion_mastery_points} points")
+            
+            # End for loop with typed amount of entries
+            if index == 8:
+                break
+
+        return embed
+
+
+    # Left Button
+    @discord.ui.button(label="Front Page", style=discord.ButtonStyle.blurple)
+    async def button1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        embed = self.front_page()
+        await interaction.response.edit_message(embed=embed)
+
+    # Right Button
+    @discord.ui.button(label="Mastery", style=discord.ButtonStyle.blurple)
+    async def button2(self, interaction: discord.Interaction, button: discord.ui.Button):
+        embed = self.mastery_page()
         await interaction.response.edit_message(embed=embed)
