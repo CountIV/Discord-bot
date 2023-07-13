@@ -8,7 +8,6 @@ class Lol(commands.Cog):
         self.bot = bot
         self.api_key = open(".env/riot_api_key", "r").read()
 
-
     @commands.command()
     async def clash(self, ctx):
         """Provides information on the start time of the next clash event."""
@@ -60,11 +59,30 @@ class Lol(commands.Cog):
 
         await ctx.send(bot_response)
 
-
     @commands.command()
     async def lol(self, ctx, *, username):
-        """Search League player by username"""
-        api_url1 = f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{username}?api_key={self.api_key}"
+        """Search League player stats by username"""
+        view = LeagueProfile(username, self.api_key)
+        embed = view.first_page()
+
+        await ctx.send(embed=embed, view=view)
+
+
+async def setup(bot):
+    await bot.add_cog(Lol(bot))
+
+
+# This handles displaying embed and navigation buttons
+class LeagueProfile(discord.ui.View):
+    def __init__(self, username, api_key):
+        super().__init__()
+        self.username = username
+        self.api_key = api_key
+
+    # Creates embed for initial and first page
+    # Returns embed for initial use
+    def first_page(self):
+        api_url1 = f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{self.username}?api_key={self.api_key}"
         response1 = requests.get(api_url1).json()
 
         encryptedSummonerId = response1["id"]
@@ -92,8 +110,12 @@ class Lol(commands.Cog):
             embed.add_field(name="Rank", value="UNRANKED", inline=False)
         embed.add_field(name="Last seen", value=date)
 
-        await ctx.send(embed=embed)
+        return embed
 
-
-async def setup(bot):
-    await bot.add_cog(Lol(bot))
+    # Initializes button
+    @discord.ui.button(label="delete", style=discord.ButtonStyle.blurple)
+    async def display(self, interaction: discord.Interaction, button: discord.ui.Button):
+        embed = discord.Embed(
+            title= "Deleted",
+        )
+        await interaction.response.edit_message(embed=embed)
