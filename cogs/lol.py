@@ -73,21 +73,36 @@ async def setup(bot):
     await bot.add_cog(Lol(bot))
 
 
-# This handles displaying embed and navigation buttons
+# This class handles displaying and editing embeds and navigation buttons
 class LeagueProfile(discord.ui.View):
+    # username is input provided by discord user
+    # api_key is found in .env and is needed to access riot api
     def __init__(self, username, api_key):
         super().__init__()
 
+        # Use summoner name to fetch data related that summoner
         api_url_summoner = f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{username}?api_key={api_key}"
         self.summoner_data = requests.get(api_url_summoner).json()
         self.name = self.summoner_data['name']
         encryptedSummonerId = self.summoner_data["id"]
+        self.puuid = self.summoner_data["puuid"]
 
+        # Fetch summoner ranked data
         api_url_ranked = f"https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/{encryptedSummonerId}?api_key={api_key}"
         self.ranked_data = requests.get(api_url_ranked).json()
 
+        # Fetch summoner mastery data
         api_url_mastery = f"https://euw1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}?api_key={api_key}"
         self.mastery = requests.get(api_url_mastery).json()
+
+        # Fetch summoner match history data
+        api_url_match_history = f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{self.puuid}/ids?start=0&count=100&api_key={api_key}"
+        match_history = requests.get(api_url_match_history).json()
+        recent_match_id = match_history[0]
+
+        # Fetch summoner's the most recent match data
+        api_url_match = f"https://europe.api.riotgames.com/lol/match/v5/matches/{recent_match_id}?api_key={api_key}"
+        self.match = requests.get(api_url_match).json()
 
     # Creates embed for initial page, returns Discord embed
     def front_page(self):
@@ -95,7 +110,7 @@ class LeagueProfile(discord.ui.View):
         # Probably updated every time a game in LoL or TFT ends
         date = datetime.fromtimestamp(self.summoner_data['revisionDate'] // 1000).strftime("%Y-%m-%d %H:%M")
 
-        # Build embed with returned data
+        # Build embed
         embed = discord.Embed(title=f"{self.name}", color=discord.Color.blue())
         if self.ranked_data != []:
             rank = f"{self.ranked_data[0]['tier']} {self.ranked_data[0]['rank']}"
@@ -119,7 +134,7 @@ class LeagueProfile(discord.ui.View):
         with open("resources/champions.json", encoding="UTF-8") as file:
             champion_data = json.load(file)
 
-        # Build Embed
+        # Build embed
         embed = discord.Embed(title=f"{self.name}: Mastery", color=discord.Color.blue())
         for index, champion in enumerate(self.mastery):
             # Get champion's name from using champion's id
@@ -127,22 +142,68 @@ class LeagueProfile(discord.ui.View):
             # Get champion's mastery points
             champion_mastery_points = champion["championPoints"]
             embed.add_field(name=f"{index+1}. {champion_name}", value=f"{champion_mastery_points} points")
-            
+
             # End for loop with typed amount of entries
             if index == 8:
                 break
 
         return embed
 
+    # Create embed based on the most recent game data
+    def recent_game(self):
+        participants = self.match["info"]["participants"]
+        # Find player inside participants by matching puuid 
+        for player in participants:
+            if self.puuid == player["puuid"]:
+                # This is empty, because player variable is what we want it be when this loop breaks
+                break
 
-    # Left Button
+        # Get relevant data
+        champion = player["championName"]
+        position = player["teamPosition"]
+        role = self.convert_position(position)
+        kda = f'{player["kills"]}/{player["deaths"]}/{player["assists"]}'
+        result = "Win" if player["win"] else "Loss"
+
+        # Build embed
+        embed = discord.Embed(title=f"{self.name}: Last Game", color=discord.Color.blue())
+        embed.add_field(name="Champion", value=champion)
+        embed.add_field(name="Role", value=role)
+        embed.add_field(name="KDA", value=kda)
+        embed.add_field(name="Result", value=result)
+
+        return embed
+
+    @staticmethod
+    def convert_position(position):
+        # Convert position using match and return corresponding role
+        match position:
+            case "TOP":
+                role = "TOP"
+            case "JUNGLE":
+                role = "JNG"
+            case "MIDDLE":
+                role = "MID"
+            case "BOTTOM":
+                role = "ADC"
+            case "UTILITY":
+                role = "SUP"
+        return role
+
+    # Left button
     @discord.ui.button(label="Front Page", style=discord.ButtonStyle.blurple)
     async def button1(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = self.front_page()
         await interaction.response.edit_message(embed=embed)
 
-    # Right Button
-    @discord.ui.button(label="Mastery", style=discord.ButtonStyle.blurple)
+    # Middle button
+    @discord.ui.button(label="Last Game", style=discord.ButtonStyle.blurple)
     async def button2(self, interaction: discord.Interaction, button: discord.ui.Button):
+        embed = self.recent_game()
+        await interaction.response.edit_message(embed=embed)
+
+    # Right button
+    @discord.ui.button(label="Mastery", style=discord.ButtonStyle.blurple)
+    async def button3(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = self.mastery_page()
         await interaction.response.edit_message(embed=embed)
