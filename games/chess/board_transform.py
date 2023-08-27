@@ -1,6 +1,6 @@
-from input_converter import coordinate_converter
-from game import Chess
-import pieces as pieces
+from games.chess.input_converter import coordinate_converter
+from games.chess.game import Game
+import games.chess.pieces as pieces
 
 def display(board_pieces):
     # Generate an empty board
@@ -72,7 +72,7 @@ def dev_display(board_pieces):
     # Prints letter on top of the board
     print("  0  1  2  3  4  5  6  7")
 
-
+# Changes game.py Game class to FEN notation
 def game_to_fen(game):
     # Generate an empty board
     board = []
@@ -119,6 +119,7 @@ def game_to_fen(game):
 
     return fen_str
 
+# Changes FEN notation game.py Game class
 def fen_to_game(fen):
     fen_list = fen.split()
     fen_board = fen_list[0].split("/")
@@ -140,7 +141,7 @@ def fen_to_game(fen):
     halfmove_clock = int(fen_list[4])
     fullmove_number = int(fen_list[5])
 
-    return Chess(board_pieces=board, turn=turn, castling=castling, en_passant=en_passant, halfmove_clock=halfmove_clock, fullmove_number=fullmove_number)
+    return Game(board_pieces=board, turn=turn, castling=castling, en_passant=en_passant, halfmove_clock=halfmove_clock, fullmove_number=fullmove_number)
 
 def create_piece(letter, coords):
     if letter == "P":

@@ -1,6 +1,6 @@
 import unittest
 import board as board
-from game import Chess
+from game import Game
 import pieces as pieces
 
 class tests(unittest.TestCase):
@@ -9,7 +9,7 @@ class tests(unittest.TestCase):
         fen_game = board.fen_to_game("4n1k1/3R4/8/7K/8/8/8/8 w - - 4 30")
         # Set up Chess state manually
         board_state = [pieces.Knight("b", (0, 4)), pieces.King("b", (0, 6)), pieces.Rook("w", (1, 3)), pieces.King("w", (3, 7))]
-        game = Chess(board_state, "w", "-", "-", 4, 30)
+        game = Game(board_state, "w", "-", "-", 4, 30)
         # Compare objects
         self.assertEqual(fen_game.board_pieces[0].letter, game.board_pieces[0].letter)
         self.assertEqual(fen_game.board_pieces[1].position, game.board_pieces[1].position)
@@ -20,7 +20,7 @@ class tests(unittest.TestCase):
         self.assertEqual(fen_game.fullmove_number, 30)
 
         # New board returns correct FEN
-        self.assertEqual(board.game_to_fen(Chess()), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        self.assertEqual(board.game_to_fen(Game()), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
     def test_validity_check(self):
         game = board.fen_to_game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")

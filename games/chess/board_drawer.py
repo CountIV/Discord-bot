@@ -149,12 +149,12 @@ def get_board(fen):
 
         positions, active_colour, castling, en_passant, halfmove, fullmove = fen.split(" ")
 
-        # assigns values depending on if it is white's turn to move
+        # Assigns values depending on if it is white's turn to move
         active_colour = False if active_colour == "b" else True
 
         chessboard = draw(positions, active_colour)
 
-        # Conver the image object into a format compatible with discord.py
+        # Convert the image object into a format compatible with discord.py
         image_stream = BytesIO()
         chessboard.save(image_stream, format="PNG")
         image_stream.seek(0)

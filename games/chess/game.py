@@ -1,6 +1,6 @@
-import pieces as pieces
+import games.chess.pieces as pieces
 
-class Chess():
+class Game():
     @staticmethod
     def starting_board():
         board = []
