@@ -26,6 +26,7 @@ def digit_classification(image):
 
     # Get prediction from model
     prediction = model.predict(data)
+    print(prediction)
 
     # Change it to readable result
     result = np.argmax(prediction, axis=1)[0]
