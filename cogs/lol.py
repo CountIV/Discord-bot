@@ -112,16 +112,18 @@ class LeagueProfile(discord.ui.View):
 
         # Build embed
         embed = discord.Embed(title=f"{self.name}", color=discord.Color.blue())
-        if self.ranked_data != []:
-            rank = f"{self.ranked_data[0]['tier']} {self.ranked_data[0]['rank']}"
-            wins = self.ranked_data[0]['wins']
-            losses = self.ranked_data[0]['losses']
-            winrate = round(wins / (wins + losses) * 100, 1)
+        for ranked_mode in self.ranked_data:
+            if ranked_mode["queueType"] == "RANKED_SOLO_5x5":
+                rank = f"{ranked_mode['tier']} {ranked_mode['rank']}"
+                wins = ranked_mode['wins']
+                losses = ranked_mode['losses']
+                winrate = round(wins / (wins + losses) * 100, 1)
 
-            embed.add_field(name="Rank", value=rank, inline=False)
-            embed.add_field(name="Wins", value=wins)
-            embed.add_field(name="Losses", value=losses)
-            embed.add_field(name="Winrate", value=f"{winrate}%")
+                embed.add_field(name="Rank", value=rank, inline=False)
+                embed.add_field(name="Wins", value=wins)
+                embed.add_field(name="Losses", value=losses)
+                embed.add_field(name="Winrate", value=f"{winrate}%")
+                break
         else:
             embed.add_field(name="Rank", value="UNRANKED", inline=False)
         embed.add_field(name="Last seen", value=date)
