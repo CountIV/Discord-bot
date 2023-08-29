@@ -4,16 +4,18 @@ import requests
 from datetime import datetime
 import json
 
+# Get riot api key from .env folder
+api_key = open(".env/riot_api_key", "r").read()
+
 class Lol(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = open(".env/riot_api_key", "r").read()
 
     @commands.command()
     async def clash(self, ctx):
         """Provides information on the start time of the next clash event."""
         # API configuration
-        api_url = "https://euw1.api.riotgames.com/lol/clash/v1/tournaments" + "?api_key=" + self.api_key
+        api_url = "https://euw1.api.riotgames.com/lol/clash/v1/tournaments" + "?api_key=" + api_key
 
         # Response body gets saved in data variable
         response = requests.get(api_url)
@@ -63,7 +65,7 @@ class Lol(commands.Cog):
     @commands.command()
     async def lol(self, ctx, *, username):
         """Search League player stats by username"""
-        view = LeagueProfile(username, self.api_key)
+        view = LeagueProfile(username)
         embed = view.front_page()
 
         await ctx.send(embed=embed, view=view)
@@ -76,8 +78,7 @@ async def setup(bot):
 # This class handles displaying and editing embeds and navigation buttons
 class LeagueProfile(discord.ui.View):
     # username is input provided by discord user
-    # api_key is found in .env and is needed to access riot api
-    def __init__(self, username, api_key):
+    def __init__(self, username):
         super().__init__()
 
         # Use summoner name to fetch data related that summoner
@@ -97,12 +98,16 @@ class LeagueProfile(discord.ui.View):
 
         # Fetch summoner match history data
         api_url_match_history = f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{self.puuid}/ids?start=0&count=100&api_key={api_key}"
-        match_history = requests.get(api_url_match_history).json()
-        recent_match_id = match_history[0]
+        self.match_history = requests.get(api_url_match_history).json()
 
-        # Fetch summoner's the most recent match data
-        api_url_match = f"https://europe.api.riotgames.com/lol/match/v5/matches/{recent_match_id}?api_key={api_key}"
-        self.match = requests.get(api_url_match).json()
+        # Track which match history index match_fetch should fetch
+        self.match_index = 0
+
+    # Fetch summoner's match data
+    def match_fetch(self):
+        match_id = self.match_history[self.match_index]
+        api_url_match = f"https://europe.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={api_key}"
+        return requests.get(api_url_match).json()
 
     # Creates embed for initial page, returns Discord embed
     def front_page(self):
@@ -152,9 +157,11 @@ class LeagueProfile(discord.ui.View):
         return embed
 
     # Create embed based on the most recent game data
-    def recent_game(self):
-        participants = self.match["info"]["participants"]
-        # Find player inside participants by matching puuid 
+    def match_page(self):
+        # Fetch data from match_fetch()
+        match = self.match_fetch()
+        participants = match["info"]["participants"]
+        # Find player inside participants by matching puuid
         for player in participants:
             if self.puuid == player["puuid"]:
                 # This is empty, because player variable is what we want it be when this loop breaks
@@ -168,7 +175,7 @@ class LeagueProfile(discord.ui.View):
         result = "Win" if player["win"] else "Loss"
 
         # Build embed
-        embed = discord.Embed(title=f"{self.name}: Last Game", color=discord.Color.blue())
+        embed = discord.Embed(title=f"{self.name}: Game {self.match_index + 1}", color=discord.Color.blue())
         embed.add_field(name="Champion", value=champion)
         embed.add_field(name="Role", value=role)
         embed.add_field(name="KDA", value=kda)
@@ -192,20 +199,35 @@ class LeagueProfile(discord.ui.View):
                 role = "SUP"
         return role
 
-    # Left button
+    # Button1
     @discord.ui.button(label="Front Page", style=discord.ButtonStyle.blurple)
     async def button1(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = self.front_page()
         await interaction.response.edit_message(embed=embed)
 
-    # Middle button
-    @discord.ui.button(label="Last Game", style=discord.ButtonStyle.blurple)
+    # Button2
+    @discord.ui.button(label="Games", style=discord.ButtonStyle.blurple)
     async def button2(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed = self.recent_game()
+        embed = self.match_page()
         await interaction.response.edit_message(embed=embed)
 
-    # Right button
+    # Button3
     @discord.ui.button(label="Mastery", style=discord.ButtonStyle.blurple)
     async def button3(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = self.mastery_page()
+        await interaction.response.edit_message(embed=embed)
+
+    # Button4
+    @discord.ui.button(label="🔼", style=discord.ButtonStyle.blurple)
+    async def button4(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.match_index != 0:
+            self.match_index -= 1
+            embed = self.match_page()
+            await interaction.response.edit_message(embed=embed)
+
+    # Button5
+    @discord.ui.button(label="🔽", style=discord.ButtonStyle.blurple)
+    async def button5(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.match_index += 1
+        embed = self.match_page()
         await interaction.response.edit_message(embed=embed)
