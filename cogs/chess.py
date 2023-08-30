@@ -39,25 +39,28 @@ class Chess(commands.Cog):
         if len(move) >= 5:
             promotion = move[4]
 
-        # game_state.move tries to move a piece with according to user's input
-        # move_result stores whether the move was successful in form of strings
-        move_result = self.game_state.move(str_coord, dest_coord, promotion)
+        # game_state.move tries to move a piece with according to user's input and returns what happened
+        move_result, move_message = self.game_state.move(str_coord, dest_coord, promotion)
 
         # Send embed/message to discord depending on move_result
-        if move_result == True or move_result == "check" or move_result == "checkmate" or move_result == "draw":
+        if move_result == True:
             fen_state = game_to_fen(self.game_state)
             chessboard, embed = get_board(fen_state)
             await ctx.send(file=chessboard, embed=embed)
 
-            if move_result == "checkmate":
+            if move_message == "Checkmate":
                 if self.game_state.turn == "b":
                     await ctx.send("Checkmate!\nWhite wins!")
                 else:
                     await ctx.send("Checkmate!\nBlack wins!")
-            elif move_result == "draw":
-                await ctx.send("Draw!")
+            elif move_message == "Stalemate":
+                await ctx.send("Draw!\nStalemate")
+            elif move_message == "Insufficient material":
+                await ctx.send("Draw!\nInsufficient material")
+            elif move_message == "Halfmove clock is full":
+                await ctx.send("Draw!\nHalfmove clock is full")
         else:
-            await ctx.send(f"Invalid move! Explaination: {move_result}")
+            await ctx.send(f"Invalid move!\nExplaination: {move_message}")
 
 async def setup(bot):
     await bot.add_cog(Chess(bot))

@@ -39,25 +39,25 @@ class Game():
         return self.board_pieces
 
     # Core that advances the game forward
-    # Returns message that informs whether move was successful and check & checkmate status
+    # Return boolean, depending whether a move was successful along with a string containing info
     # When testing is on, test moves without affecting the game state
     def move(self, str_coord, dest_coord, promotion=False, testing=False):
         for piece in self.board_pieces:
             if piece.position == str_coord:
                 if piece.color != self.turn:
-                    return "That's opponent's piece!"
+                    return False, "That's opponent's piece!"
                 row_distance, col_distance = piece.coord_distance(dest_coord)
                 # Each if clauses check the legality of the move
                 movement = piece.movement(row_distance, col_distance)
                 if movement == False:
-                    return "Movement impossible"
+                    return False, "Movement impossible"
                 elif movement == True:
                     if piece.obstacle_check(row_distance, col_distance, self) == False and isinstance(piece, pieces.Knight) == False:
-                        return "There's obstacle in piece's way"
+                        return False, "There's obstacle in piece's way"
                     destination_check = piece.destination_check(dest_coord, self)
                     # Returns False when move isn't legal
                     if destination_check == False:
-                        return "Destination not valid"
+                        return False, "Destination not valid"
                     # Returns None when move is legal, but no pieces are captured
                     elif destination_check == None:
                         pass
@@ -71,34 +71,34 @@ class Game():
                         piece.position = str_coord
                         if destination_check != None:
                             self.board_pieces.append(destination_check)
-                        return "Check"
+                        return False, "Check"
                 # Check castling legality
                 elif movement == "castling":
                     # Checks if associated pieces have moved
                     if str_coord == (7, 4) and dest_coord == (7, 2):
                         if "Q" not in self.castling:
-                            return "Invalid castling"
+                            return False, "Invalid castling"
                         col_distance -= 2
                         rook_position = (7, 0)
                     elif str_coord == (7, 4) and dest_coord == (7, 6):
                         if "K" not in self.castling:
-                            return "Invalid castling"
+                            return False, "Invalid castling"
                         col_distance += 1
                         rook_position = (7, 7)
                     elif str_coord == (0, 4) and dest_coord == (0, 2):
                         if "q" not in self.castling:
-                            return "Invalid castling"
+                            return False, "Invalid castling"
                         col_distance -= 2
                         rook_position = (0, 0)
                     elif str_coord == (0, 4) and dest_coord == (0, 6):
                         if "k" not in self.castling:
-                            return "Invalid castling"
+                            return False, "Invalid castling"
                         col_distance += 1
                         rook_position = (0, 7)
                     else:
-                        return "Very invalid castling"
+                        return False, "Very invalid castling"
                     if piece.obstacle_check(row_distance, col_distance, self) == False:
-                        return "Invalid castling"
+                        return False, "Invalid castling"
                     # Sets direction for later use
                     if col_distance > 0:
                         direction = 1
@@ -107,7 +107,7 @@ class Game():
                     # Checks for check of king's path
                     for i in range(str_coord[1], str_coord[1] + col_distance + direction, direction):
                         if self.check_check((str_coord[0], i)) == True:
-                            return "Invalid castling"
+                            return False, "Invalid castling"
                     # If testing castling, then don't move pieces, just return True
                     if testing == False:
                         # Move pieces to their spot
@@ -145,7 +145,7 @@ class Game():
                                 piece.position = str_coord
                                 if destination_check != None:
                                     self.board_pieces.append(destination_check)
-                                return "Invalid promotion"
+                                return False, "Invalid promotion"
                             # Remove promoted pawn
                             self.board_pieces.remove(piece)
                         # Disable double move
@@ -187,26 +187,23 @@ class Game():
 
                     # Checks whether the game has ended
                     if self.check_check() == True:
-                        if self.checkmate_check() == False:
-                            return "checkmate"
+                        if self.checkmate_check() == True:
+                            return True, "Checkmate"
                         else:
-                            return "check"
-                    elif self.checkmate_check() == False:
-                        print("Stalemate!")
-                        return "draw"
+                            return True, "Check"
+                    elif self.checkmate_check() == True:
+                        return True, "Stalemate"
                     elif self.dead_position() == True:
-                        print("Insufficient material")
-                        return "draw"
+                        return True, "Insufficient material"
                     elif self.halfmove_clock == 100:
-                        print("Halfmove clock is full")
-                        return "draw!"
+                        return True, "Halfmove clock is full"
                 else:
                     piece.position = str_coord
                     if destination_check != None:
                         self.board_pieces.append(destination_check)
 
-                return True
-        return "Empty square"
+                return True, "Valid move"
+        return False, "Empty square"
 
     # Check if a piece is checking ally king
     def check_check(self, coords=None): # Parameter for castling purposes
@@ -241,9 +238,9 @@ class Game():
             if piece.color == self.turn:
                 for x in range(8):
                     for y in range(8):
-                        if self.move(piece.position, (x, y), False, True) == True:
-                            return True
-        return False
+                        if self.move(piece.position, (x, y), False, True)[0] == True:
+                            return False
+        return True
 
     # Tells which color the board square is
     @staticmethod
@@ -286,7 +283,7 @@ class Game():
                 continue
             for x in range(8):
                 for y in range(8):
-                    if self.move(piece.position, (x, y), False, True) == True:
+                    if self.move(piece.position, (x, y), False, True)[0] == True:
                         valid_moves.append((x, y))
         return valid_moves
 
@@ -298,7 +295,7 @@ class Game():
                 continue
             for x in range(8):
                 for y in range(8):
-                    if self.move(piece.position, (x, y), False, True) == True:
+                    if self.move(piece.position, (x, y), False, True)[0] == True:
                         valid_pieces.append(piece)
                         break
         return valid_pieces
