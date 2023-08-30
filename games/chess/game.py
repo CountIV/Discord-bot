@@ -39,7 +39,7 @@ class Game():
         return self.board_pieces
 
     # Core that advances the game forward
-    # Return True if move is successful, strings functions as False with error message attached to it
+    # Returns message that informs whether move was successful and check & checkmate status
     # When testing is on, test moves without affecting the game state
     def move(self, str_coord, dest_coord, promotion=False, testing=False):
         for piece in self.board_pieces:
@@ -188,10 +188,9 @@ class Game():
                     # Checks whether the game has ended
                     if self.check_check() == True:
                         if self.checkmate_check() == False:
-                            print("Checkmate!")
                             return "checkmate"
                         else:
-                            print("Check!")
+                            return "check"
                     elif self.checkmate_check() == False:
                         print("Stalemate!")
                         return "draw"
