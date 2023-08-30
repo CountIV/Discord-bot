@@ -110,15 +110,23 @@ def get_pieces():
 
 # Combine the board and pieces into one image
 def draw(fen, white_to_move: bool):
+    # White's turn reverses fen order
+    # Black's turn reveres fen's row order
+    fen = fen.split("/")
     if white_to_move:
-        fen = fen.split("/")
-        fen = "/".join(reversed(fen))
+        modified_fen = "/".join(reversed(fen))
+    else:
+        modified_fen = []
+        for char in fen:
+            modified_fen.append(''.join(reversed(char)))
+        modified_fen = "/".join(modified_fen)
+
     board = generate_board(8, white_to_move)
     draw = ImageDraw.Draw(board)
     row = 8 - 1
     col = 0
 
-    for char in fen:
+    for char in modified_fen:
         if char == '/':
             row -= 1
             col = 0
