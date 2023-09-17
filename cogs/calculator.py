@@ -13,7 +13,7 @@ class Calculator(commands.Cog):
         j = 0
 
         for i, char in enumerate(message):
-            if char == "+":
+            if char == "+" or char == "-":
                 calc_list.append(int(message[j:i]))
                 calc_list.append(message[i])
                 j = i+1
@@ -23,6 +23,8 @@ class Calculator(commands.Cog):
         for i, char in enumerate(calc_list):
             if char == "+":
                 result += calc_list[i+1]
+            if char == "-":
+                result -= calc_list[i+1]
 
         await ctx.send(result)
 
