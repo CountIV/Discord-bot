@@ -11,19 +11,32 @@ class Calculator(commands.Cog):
         """Math calculator"""
         calc_list = []
         j = 0
-
+        # Separates each element to a list
         for i, char in enumerate(message):
-            if char == "+" or char == "-":
+            if char == "+" or char == "-" or char == "*":
                 calc_list.append(int(message[j:i]))
                 calc_list.append(message[i])
                 j = i+1
         calc_list.append(int(message[j:]))
 
+        # Handles multiplication
+        i = 0
+        while i < len(calc_list):
+            char = calc_list[i]
+            if char == "*":
+                calc_list[i-1] = calc_list[i-1] * calc_list[i+1]
+                del calc_list[i], calc_list[i]
+            else:
+                i += 1
+
+        # Handles addition and subtraction
         result = calc_list[0]
         for i, char in enumerate(calc_list):
-            if char == "+":
+            if i == 0:
+                result = calc_list[0]
+            elif char == "+":
                 result += calc_list[i+1]
-            if char == "-":
+            elif char == "-":
                 result -= calc_list[i+1]
 
         await ctx.send(result)
