@@ -9,22 +9,28 @@ class Calculator(commands.Cog):
     @commands.command(aliases=["cal"])
     async def calculator(self, ctx, *, message):
         """Math calculator"""
+        decimal_places = 6
+        operators = ["+", "-", "*", "/"]
         calc_list = []
+        
         j = 0
         # Separates each element to a list
         for i, char in enumerate(message):
-            if char == "+" or char == "-" or char == "*":
+            if char in operators:
                 calc_list.append(int(message[j:i]))
                 calc_list.append(message[i])
                 j = i+1
         calc_list.append(int(message[j:]))
 
-        # Handles multiplication
+        # Handles multiplication and division
         i = 0
         while i < len(calc_list):
             char = calc_list[i]
             if char == "*":
                 calc_list[i-1] = calc_list[i-1] * calc_list[i+1]
+                del calc_list[i], calc_list[i]
+            elif char == "/":
+                calc_list[i-1] = calc_list[i-1] / calc_list[i+1]
                 del calc_list[i], calc_list[i]
             else:
                 i += 1
@@ -38,6 +44,13 @@ class Calculator(commands.Cog):
                 result += calc_list[i+1]
             elif char == "-":
                 result -= calc_list[i+1]
+        
+        # Deals with float numbers
+        if type(result) == float:
+            if result.is_integer():
+                result = int(result)
+            else:
+                result = round(result, decimal_places)
 
         await ctx.send(result)
 
