@@ -17,10 +17,16 @@ class Calculator(commands.Cog):
         # Separates each element to a list
         for i, char in enumerate(message):
             if char in operators:
-                calc_list.append(int(message[j:i]))
+                try:
+                    calc_list.append(int(message[j:i]))
+                except ValueError:
+                    calc_list.append(float(message[j:i]))
                 calc_list.append(message[i])
                 j = i+1
-        calc_list.append(int(message[j:]))
+        try:
+            calc_list.append(int(message[j:]))
+        except ValueError:
+            calc_list.append(float(message[j:]))
 
         # Handles multiplication and division
         i = 0
