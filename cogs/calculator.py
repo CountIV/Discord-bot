@@ -12,7 +12,8 @@ class Calculator(commands.Cog):
         decimal_places = 6
         operators = ["+", "-", "*", "/"]
         calc_list = []
-        
+        message = message.replace("`", "") # removes ` used, which is used to make * visible on Discord
+
         j = 0
         # Separates each element to a list
         for i, char in enumerate(message):
