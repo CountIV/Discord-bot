@@ -10,7 +10,7 @@ class Calculator(commands.Cog):
     async def calculator(self, ctx, *, message):
         """Math calculator"""
         decimal_places = 6
-        operators = ["+", "-", "*", "/"]
+        operators = ["+", "-", "*", "/", "^"]
         calc_list = []
         message = message.replace("`", "") # removes ` used, which is used to make * visible on Discord
 
@@ -28,6 +28,16 @@ class Calculator(commands.Cog):
             calc_list.append(int(message[j:]))
         except ValueError:
             calc_list.append(float(message[j:]))
+
+        # Handles exponentiation
+        i = 0
+        while i < len(calc_list):
+            char = calc_list[i]
+            if char == "^":
+                calc_list[i-1] = calc_list[i-1] ** calc_list[i+1]
+                del calc_list[i], calc_list[i]
+            else:
+                i += 1
 
         # Handles multiplication and division
         i = 0
