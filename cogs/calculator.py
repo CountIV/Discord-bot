@@ -15,15 +15,17 @@ class Calculator(commands.Cog):
         message = message.replace("`", "") # removes ` used, which is used to make * visible on Discord
 
         j = 0
+        first = True
         # Separates each element to a list
         for i, char in enumerate(message):
-            if char in operators:
+            if char in operators and first != True:
                 try:
                     calc_list.append(int(message[j:i]))
                 except ValueError:
                     calc_list.append(float(message[j:i]))
                 calc_list.append(message[i])
                 j = i+1
+            first = False
         try:
             calc_list.append(int(message[j:]))
         except ValueError:
