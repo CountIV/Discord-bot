@@ -6,7 +6,7 @@ class Calculator(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["cal"])
+    @commands.command(aliases=["cal", "c"])
     async def calculator(self, ctx, *, message):
         """Math calculator"""
         decimal_places = 6
